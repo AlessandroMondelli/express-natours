@@ -11,6 +11,7 @@ const app = express();
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); //Utilizzo middleware di terze parti per vedere in console la richiesta solo se sono in modalità development
 }
+
 app.use(express.json()); //Dichiaro middleware
 
 app.use((req, res, next) => {
