@@ -4,8 +4,6 @@ const tourController = require('../controllers/tourController'); //Import metodi
 //Creo router
 const router = express.Router();
 
-router.param('id', tourController.checkID); //Richiamo metodo per Param Middleware
-
 //Routes tours
 router
   .route('/')

@@ -1,25 +1,4 @@
-const fs = require('fs');
-
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8')
-); //Ricevo dati da file, trasformando da JSON a JS
-
-exports.checkID = (req, res, next, val) => {
-  //Creo metodo per controllo ID da utilizzare in un Param Middleware
-  const id = req.params.id * 1; //Recupero id da url e lo trasformo in numero
-  const tour = tours.find((el) => el.id === id);
-
-  console.log(`ID passato in param middleware: ${id}`);
-
-  if (!tour) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
-  next();
-};
+const Tour = require('../models/tourModel');
 
 exports.checkData = (req, res, next) => {
   //Creo metodo per controllo ID da utilizzare in un Param Middleware
@@ -36,76 +15,104 @@ exports.checkData = (req, res, next) => {
 };
 
 //Handlers
-exports.getTours = (req, res) => {
-  //Assegno a costante funzione per recuperare tours
-  res.status(200).json({
-    status: 'success',
-    elements: tours.length,
-    data: {
-      tours,
-    },
-  });
+exports.getTours = async (req, res) => {
+  //DONE: GET Tours
+  try {
+    //Recupero tutti i tour dalla collection
+    const tours = await Tour.find();
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tours,
+      },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'Tours not found',
+      error: error,
+    });
+  }
 };
 
-exports.getTour = (req, res) => {
-  //Assegno a costante funzione per recuperare tour
-  const id = req.params.id * 1; //Recupero id da url e lo trasformo in numero
-  const tour = tours.find((el) => el.id === id);
+exports.getTour = async (req, res) => {
+  //DONE: GET Tour
+  try {
+    //Recupero tour tramite id
+    const tour = await Tour.findById(req.params.id);
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'failed',
+      message: 'Tour not found',
+      error: error,
+    });
+  }
 };
 
-exports.createTour = (req, res) => {
-  //Assegno a costante funzione per creare tour
-  const id = tours[tours.length - 1].id + 1; //Recupero id da ultimo elemento dell'oggetto
-  const newTour = Object.assign(
-    //Faccio merge di due oggetti per unire nuovo id a corpo della richiesta
-    { id: id },
-    req.body
-  );
+exports.createTour = async (req, res) => {
+  //DONE: POST Tour
+  try {
+    const newTour = await Tour.create(req.body); //Creo document in database recuperando contenuto da req.body
 
-  tours.push(newTour); //Aggiungo ad array di oggetti tours il nuovo tour
-
-  fs.writeFile(
-    `${__dirname}/../dev-data/data/tours-simple.json`,
-    JSON.stringify(tours),
-    (err) => {
-      //Scrivo su file trasformando in JSON l'oggetto che abbiamo creato
-      res.status(201).json({
-        status: 'success',
-        data: {
-          tour: newTour,
-        },
-      });
-    }
-  );
+    //In caso di successo ritorno messaggio con dati inseriti
+    res.status(201).json({
+      status: 'success',
+      data: {
+        newTour,
+      },
+    });
+  } catch (error) {
+    //In caso di errore ritorno messaggio
+    res.status(400).json({
+      status: 'failed',
+      message: error,
+    });
+  }
 };
 
-exports.patchTour = (req, res) => {
-  const id = req.params.id * 1; //Recupero id da url e lo trasformo in numero
-  const tour = tours.find((el) => el.id === id);
+exports.patchTour = async (req, res) => {
+  //DONE: PATCH Tour
+  try {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: 'failed',
+      message: error,
+    });
+  }
 };
 
-exports.deleteTour = (req, res) => {
-  const id = req.params.id * 1; //Recupero id da url e lo trasformo in numero
-  const tour = tours.find((el) => el.id === id);
+exports.deleteTour = async (req, res) => {
+  //DONE: Delete tour
+  try {
+    await Tour.findByIdAndDelete(req.params.id);
 
-  res.status(204).json({
-    status: 'success',
-    data: {
-      tour,
-    },
-  });
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'failed',
+      message: error,
+    });
+  }
 };
