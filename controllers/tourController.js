@@ -18,8 +18,30 @@ exports.checkData = (req, res, next) => {
 exports.getTours = async (req, res) => {
   //DONE: GET Tours
   try {
+    //Escludo parametri non inerenti a DB per Query
+    //Hard save su nuovo oggetto per parametri query
+    const toursQueryObj = { ...req.query };
+
+    //Campi da escludere
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+
+    //Elimino campi non necessari da query
+    excludedFields.forEach((el) => delete toursQueryObj[el]);
+
+    //Filtro avanzato
+    //Trasformo in stringa nuovo oggetto
+    let toursObjString = JSON.stringify(toursQueryObj);
+    //Aggiungo simbolo $ per filtro avanzato
+    toursObjString = toursObjString.replace(
+      /\b(gte|gt|lte|lt)\b/g,
+      (match) => `$${match}`
+    );
+
+    //Salvo query ritrasformandola in formato JSON
+    const toursQuery = Tour.find(JSON.parse(toursObjString));
+
     //Recupero tutti i tour dalla collection
-    const tours = await Tour.find();
+    const tours = await toursQuery;
 
     res.status(200).json({
       status: 'success',
