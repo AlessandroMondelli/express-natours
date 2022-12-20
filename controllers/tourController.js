@@ -1,4 +1,14 @@
 const Tour = require('../models/tourModel');
+const APIFeatures = require('../utils/apiFeatures');
+
+//Funzione aliasing per route top-5
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,ratingsAverage,price,description';
+
+  next();
+};
 
 exports.checkData = (req, res, next) => {
   //Creo metodo per controllo ID da utilizzare in un Param Middleware
@@ -18,30 +28,17 @@ exports.checkData = (req, res, next) => {
 exports.getTours = async (req, res) => {
   //DONE: GET Tours
   try {
-    //Escludo parametri non inerenti a DB per Query
-    //Hard save su nuovo oggetto per parametri query
-    const toursQueryObj = { ...req.query };
-
-    //Campi da escludere
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
-
-    //Elimino campi non necessari da query
-    excludedFields.forEach((el) => delete toursQueryObj[el]);
-
-    //Filtro avanzato
-    //Trasformo in stringa nuovo oggetto
-    let toursObjString = JSON.stringify(toursQueryObj);
-    //Aggiungo simbolo $ per filtro avanzato
-    toursObjString = toursObjString.replace(
-      /\b(gte|gt|lte|lt)\b/g,
-      (match) => `$${match}`
-    );
-
-    //Salvo query ritrasformandola in formato JSON
-    const toursQuery = Tour.find(JSON.parse(toursObjString));
+    //Conto documents del model
+    const toursCount = await Tour.countDocuments();
+    //Creo nuova istanza della classe che contiene le features e richiamo funzione filter
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .selectFields()
+      .pagination(toursCount);
 
     //Recupero tutti i tour dalla collection
-    const tours = await toursQuery;
+    const tours = await features.query;
 
     res.status(200).json({
       status: 'success',

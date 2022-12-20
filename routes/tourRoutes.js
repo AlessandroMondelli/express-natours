@@ -4,6 +4,11 @@ const tourController = require('../controllers/tourController'); //Import metodi
 //Creo router
 const router = express.Router();
 
+//Creo route Alias per recuperare 5 top tours in base a rating e prezzo
+router
+  .route('/top-5')
+  .get(tourController.aliasTopTours, tourController.getTours);
+
 //Routes tours
 router
   .route('/')
