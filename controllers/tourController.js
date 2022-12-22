@@ -42,6 +42,7 @@ exports.getTours = async (req, res) => {
 
     res.status(200).json({
       status: 'success',
+      count: toursCount,
       data: {
         tours,
       },
