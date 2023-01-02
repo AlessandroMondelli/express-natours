@@ -1,6 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
 
+//Importo modulo per gestire errori
+const AppError = require('./utils/appError');
+const globalErrHandler = require('./utils/errHandler');
+
 //Importo routes
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -20,20 +24,11 @@ app.use('/api/v1/users', userRouter);
 
 //Definisco errore generico in caso di route non gestita
 app.use('*', (req, res, next) => {
-  const err = new Error(`Can't find ${req.originalUrl} on this server!`);
-
-  next(err);
+  //Richiamo classe gestione errori
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 //Definisco middleware che cattura tutti gli errori dei middleware esistenti
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const status = err.status || 'error';
-
-  res.status(statusCode).json({
-    status: status,
-    message: `Error: ${err.message}`,
-  });
-});
+app.use(globalErrHandler);
 
 module.exports = app; //Esporto app per importare in server.js
