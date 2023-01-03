@@ -40,7 +40,6 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     errOutputDevelopment(err, res); //Richiamo funzione che gestisce errori per modalità sviluppo
   } else if (process.env.NODE_ENV === 'production') {
-    console.log(err.name);
     let error = { ...err }; //Creo hard copy di error
 
     if (err.code === 11000) error = handleDuplicateFieldsDB(error); //Modifico errore richiamando funzione che inserisce messaggio errore
