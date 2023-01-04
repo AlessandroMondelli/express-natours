@@ -45,6 +45,12 @@ module.exports = (err, req, res, next) => {
     if (err.code === 11000) error = handleDuplicateFieldsDB(error); //Modifico errore richiamando funzione che inserisce messaggio errore
     if (err.name === 'ValidationError') error = new AppError(err.message, 400); //Controllo errori di validazione e ritorno messaggio
 
+    //Controllo errori token
+    if (err.name === 'JsonWebTokenError')
+      error = new AppError('Invalid token, log in again.', 401);
+    if (err.name === 'TokenExpiredError')
+      error = new AppError('Token expired, log in again', 401);
+
     errOutputProduction(error, res); //Richiamo funzione che gestisce errori per modalità produzione
   }
 };

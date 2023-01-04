@@ -30,6 +30,7 @@ const userSchema = mongoose.Schema({
     required: [true, 'The password is not optional!'],
     minLength: [8, 'The password must contain 8 characters at least'],
     trim: true,
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -40,6 +41,7 @@ const userSchema = mongoose.Schema({
     },
     trim: true,
   },
+  passwordChangedAt: Date,
 });
 
 //Encryption delle password prima del salvataggio
@@ -55,6 +57,30 @@ userSchema.pre('save', async function (next) {
 
   next();
 });
+
+//Instance method per confrontare password criptata con quella del login
+userSchema.methods.passwordCheck = async function (
+  inputPassword,
+  userPassword
+) {
+  return await bcrypt.compare(inputPassword, userPassword);
+};
+
+//Instance method per confrontare data JWT a data cambio password
+userSchema.methods.checkNewPasswordDate = function (jwtDate) {
+  if (this.passwordChangedAt) {
+    //Converto data password per confrontare con quella del token
+    const convertedNewPasswordDate = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+
+    //Se la data è più recente, allora ritorno true
+    return convertedNewPasswordDate > jwtDate;
+  }
+
+  return false;
+};
 
 //Creo model
 const User = mongoose.model('User', userSchema);

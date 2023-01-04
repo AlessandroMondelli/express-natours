@@ -7,6 +7,7 @@ const router = express.Router();
 
 //Auth Routes
 router.post('/signup', authController.signupUser);
+router.post('/login', authController.login);
 
 //Users Routes
 router

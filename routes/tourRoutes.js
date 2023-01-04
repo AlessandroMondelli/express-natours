@@ -1,5 +1,6 @@
 const express = require('express');
 const tourController = require('../controllers/tourController'); //Import metodi da controller
+const authController = require('../controllers/authController'); //Import metodi auth da controller
 
 //Creo router
 const router = express.Router();
@@ -15,7 +16,7 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 //Routes tours
 router
   .route('/')
-  .get(tourController.getTours)
+  .get(authController.protectRoute, tourController.getTours)
   .post(tourController.checkData, tourController.createTour);
 router
   .route('/:id')
