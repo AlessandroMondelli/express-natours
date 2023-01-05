@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 //Schema per Model User
 const userSchema = mongoose.Schema({
@@ -25,6 +26,11 @@ const userSchema = mongoose.Schema({
     required: [true, 'The user must have a photo'],
     trim: true,
   },
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user',
+  },
   password: {
     type: String,
     required: [true, 'The password is not optional!'],
@@ -42,6 +48,8 @@ const userSchema = mongoose.Schema({
     trim: true,
   },
   passwordChangedAt: Date,
+  passwordResetToken: String,
+  passwordResetTokenExpire: Date,
 });
 
 //Encryption delle password prima del salvataggio
@@ -54,6 +62,17 @@ userSchema.pre('save', async function (next) {
 
   //Setto conferma password ad undefined
   this.passwordConfirm = undefined;
+
+  next();
+});
+
+//Salvo data ultima modifica della password
+userSchema.pre('save', function (next) {
+  //Se non è stata modificata la password o si tratta di un nuovo record salto al prossimo middleware
+  if (!this.isModified('password') || this.isNew) return next();
+
+  //Altrimenti salvo data attuale, con 1 secondo nel passato perché altrimenti verrebbe creato prima il JWT rendendolo nullo
+  this.passwordChangedAt = Date.now() - 1000;
 
   next();
 });
@@ -80,6 +99,22 @@ userSchema.methods.checkNewPasswordDate = function (jwtDate) {
   }
 
   return false;
+};
+
+//Instance method che genera token per richiesta rigenerazione password
+userSchema.methods.createResetPasswordToken = function () {
+  //Genero stringa token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  //Cripto il token per salvarlo nel db
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  //Setto una scadenza al token a 10 minuti
+  this.passwordResetTokenExpire = Date.now() + 75 * 60 * 1000;
+  return resetToken;
 };
 
 //Creo model

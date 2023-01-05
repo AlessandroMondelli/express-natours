@@ -11,17 +11,37 @@ router
   .get(tourController.aliasTopTours, tourController.getTours);
 
 router.route('/tours-data').get(tourController.getToursData);
-router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+
+//Router che prende tours e li conta in base mensile
+router
+  .route('/monthly-plan/:year')
+  .get(
+    authController.protectRoute,
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.getMonthlyPlan
+  );
 
 //Routes tours
 router
   .route('/')
   .get(authController.protectRoute, tourController.getTours)
-  .post(tourController.checkData, tourController.createTour);
+  .post(
+    authController.protectRoute,
+    tourController.checkData,
+    tourController.createTour
+  );
 router
   .route('/:id')
-  .get(tourController.getTour)
-  .patch(tourController.patchTour)
-  .delete(tourController.deleteTour);
+  .get(authController.protectRoute, tourController.getTour)
+  .patch(
+    authController.protectRoute,
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.patchTour
+  )
+  .delete(
+    authController.protectRoute,
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.deleteTour
+  );
 
 module.exports = router;
