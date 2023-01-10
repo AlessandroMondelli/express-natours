@@ -12,6 +12,25 @@ router.post('/login', authController.login);
 //Routes Rigenerazione password
 router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-password/:token', authController.resetPassword);
+router.patch(
+  '/update-password',
+  authController.protectRoute,
+  authController.updatePassword
+);
+
+//Route modifica dati utente
+router.patch(
+  '/update-me',
+  authController.protectRoute,
+  usersController.updateCurrentUser
+);
+
+//Route eliminazione utente
+router.delete(
+  '/delete-me',
+  authController.protectRoute,
+  usersController.deleteCurrentUser
+);
 
 //Users Routes
 router

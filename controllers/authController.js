@@ -1,16 +1,27 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const AppError = require('../utils/appError');
 const User = require('../models/userModel');
 const asyncErrCheck = require('../utils/asyncErr');
 const sendEmail = require('../utils/email');
-const crypto = require('crypto');
 
 //Funzione che genera JWT
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
     expiresIn: process.env.JWT_TOKEN_EXP,
   });
+
+//Funzione che effettua login e ritorna risposta
+const loginUserToken = (res, userId, statusCode) => {
+  const loginToken = signToken(userId);
+
+  res.status(statusCode).json({
+    status: 'success',
+    message: 'Password updated.',
+    token: loginToken,
+  });
+};
 
 //Metodo che crea l'user
 exports.signupUser = asyncErrCheck(async (req, res, next) => {
@@ -61,16 +72,7 @@ exports.login = asyncErrCheck(async (req, res, next) => {
     return next(new AppError('Wrong email or password.', 401));
   }
 
-  const token = signToken(userData._id);
-
-  res.status(200).json({
-    status: 'success',
-    message: 'You logged in!',
-    token: token,
-    data: {
-      username: req.body.username,
-    },
-  });
+  loginUserToken(res, userData.id, 201);
 });
 
 //Metodo per proteggere routes da utenti non loggati
@@ -183,6 +185,7 @@ exports.forgotPassword = asyncErrCheck(async (req, res, next) => {
   }
 });
 
+//Metodo che resetta password dopo email con token
 exports.resetPassword = asyncErrCheck(async (req, res, next) => {
   //Recupero e rendo criptato il token presente nella request dell'utente
   const cryptedToken = crypto
@@ -213,14 +216,31 @@ exports.resetPassword = asyncErrCheck(async (req, res, next) => {
   await userByResetToken.save();
 
   //Login utente
-  const token = signToken(userByResetToken._id);
+  loginUserToken(res, userByResetToken.id, 200);
+});
 
-  res.status(200).json({
-    status: 'success',
-    message: 'You logged in!',
-    token: token,
-    data: {
-      username: userByResetToken.username,
-    },
-  });
+//Metodo che permette agli utenti loggati di cambiare password
+exports.updatePassword = asyncErrCheck(async (req, res, next) => {
+  //Recupero utente corrente con oggetto già presente in req
+  const currentUser = await User.findById(req.user.id).select('+password');
+
+  if (!currentUser) {
+    return next(new AppError('User not defined, try again.', 403));
+  }
+
+  //Controllo che la password inserita sia corretta
+  const { oldPassword } = req.body;
+
+  if (!(await currentUser.passwordCheck(oldPassword, currentUser.password))) {
+    return next(new AppError('You inserted the wrong password.', 403));
+  }
+
+  //Aggiorno password
+  currentUser.password = req.body.newPassword;
+  currentUser.passwordConfirm = req.body.newPasswordConfirm;
+
+  await currentUser.save();
+
+  //Effettuo login automatico utente
+  loginUserToken(res, currentUser.id, 200);
 });

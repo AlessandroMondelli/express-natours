@@ -50,6 +50,11 @@ const userSchema = mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetTokenExpire: Date,
+  isActive: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 //Encryption delle password prima del salvataggio
@@ -73,6 +78,14 @@ userSchema.pre('save', function (next) {
 
   //Altrimenti salvo data attuale, con 1 secondo nel passato perché altrimenti verrebbe creato prima il JWT rendendolo nullo
   this.passwordChangedAt = Date.now() - 1000;
+
+  next();
+});
+
+//Query Middleware per non mostrare utenti disattivati
+userSchema.pre(/^find/, function (next) {
+  //Filtro risultati prima di passarli al prossimo middleware
+  this.find({ isActive: { $ne: false } });
 
   next();
 });
