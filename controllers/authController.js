@@ -13,13 +13,32 @@ const signToken = (id) =>
   });
 
 //Funzione che effettua login e ritorna risposta
-const loginUserToken = (res, userId, statusCode) => {
-  const loginToken = signToken(userId);
+const loginUserToken = (res, user, statusCode) => {
+  const loginToken = signToken(user.id);
+
+  //Salvo opzioni cookie
+  const cookieOptions = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXP * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+
+  //Se in produzione, attivo protezione https
+  if (process.env.NODE_ENV === 'production') {
+    cookieOptions.secure = true;
+  }
+
+  //Invio cookie a client
+  res.cookie('jwt', loginToken, cookieOptions);
+
+  //Nascondo password da risposta
+  user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
-    message: 'Password updated.',
     token: loginToken,
+    data: {
+      user,
+    },
   });
 };
 
@@ -35,18 +54,8 @@ exports.signupUser = asyncErrCheck(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
   });
 
-  //Richiamo funzione per generare token
-  const token = signToken(req.body._id);
-
-  //Invio risposta
-  res.status(201).json({
-    status: 'success',
-    message: 'User successfully created',
-    token: token,
-    data: {
-      user: newUser,
-    },
-  });
+  //Invio token e risposta
+  loginUserToken(res, newUser, 201);
 });
 
 exports.login = asyncErrCheck(async (req, res, next) => {
@@ -72,7 +81,7 @@ exports.login = asyncErrCheck(async (req, res, next) => {
     return next(new AppError('Wrong email or password.', 401));
   }
 
-  loginUserToken(res, userData.id, 201);
+  loginUserToken(res, userData, 201);
 });
 
 //Metodo per proteggere routes da utenti non loggati
@@ -216,7 +225,7 @@ exports.resetPassword = asyncErrCheck(async (req, res, next) => {
   await userByResetToken.save();
 
   //Login utente
-  loginUserToken(res, userByResetToken.id, 200);
+  loginUserToken(res, userByResetToken, 200);
 });
 
 //Metodo che permette agli utenti loggati di cambiare password
@@ -242,5 +251,5 @@ exports.updatePassword = asyncErrCheck(async (req, res, next) => {
   await currentUser.save();
 
   //Effettuo login automatico utente
-  loginUserToken(res, currentUser.id, 200);
+  loginUserToken(res, currentUser, 200);
 });

@@ -1,5 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 //Importo modulo per gestire errori
 const AppError = require('./utils/appError');
@@ -11,10 +13,23 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-//1 - MIDDLEWARES
+//1 - MIDDLEWARES GLOBALI
+//Middleware per aggiungere headers di sicurezza aggiuntivi
+app.use(helmet());
+
+//Uso morgan in modalità dev solo se l'ambiente è in modalità development
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); //Utilizzo middleware di terze parti per vedere in console la richiesta solo se sono in modalità development
 }
+
+//Middleware che limita richiesta dallo stesso IP
+const limiter = rateLimit({
+  max: 50,
+  windowMs: 60 * 60 * 1000,
+  message: "You sent too many request, you're a hacker, aren't you?",
+});
+
+app.use('/api', limiter);
 
 app.use(express.json()); //Dichiaro middleware
 
