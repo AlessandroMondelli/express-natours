@@ -2,6 +2,9 @@ const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xssClean = require('xss-clean');
+const hpp = require('hpp');
 
 //Importo modulo per gestire errori
 const AppError = require('./utils/appError');
@@ -16,6 +19,27 @@ const app = express();
 //1 - MIDDLEWARES GLOBALI
 //Middleware per aggiungere headers di sicurezza aggiuntivi
 app.use(helmet());
+
+//Middleware che fa sanitize delle request per evitare NoSQL Injections
+app.use(mongoSanitize());
+
+//Middleware che evita Cross-Scripting
+app.use(xssClean());
+
+//Middleware che evita Parameter Pollution
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'duration',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  })
+);
 
 //Uso morgan in modalità dev solo se l'ambiente è in modalità development
 if (process.env.NODE_ENV === 'development') {

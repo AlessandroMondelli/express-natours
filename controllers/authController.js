@@ -74,7 +74,7 @@ exports.login = asyncErrCheck(async (req, res, next) => {
   //Controllo username e password
   if (
     !(
-      userData.username === req.body.username &&
+      userData.email === req.body.email &&
       (await userData.passwordCheck(req.body.password, userData.password))
     )
   ) {

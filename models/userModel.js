@@ -127,6 +127,7 @@ userSchema.methods.createResetPasswordToken = function () {
 
   //Setto una scadenza al token a 10 minuti
   this.passwordResetTokenExpire = Date.now() + 75 * 60 * 1000;
+
   return resetToken;
 };
 
