@@ -8,7 +8,7 @@ const tourSchema = mongoose.Schema(
       type: String,
       required: [true, 'The tour must have a name'],
       unique: true,
-      minLength: [15, 'A tour must have 15 charaters or more'],
+      minLength: [5, 'A tour must have 5 charaters or more'],
     },
     slug: {
       type: String,
@@ -16,7 +16,7 @@ const tourSchema = mongoose.Schema(
     },
     private: {
       type: Boolean,
-      required: true,
+      default: false,
     },
     duration: {
       type: Number,
@@ -26,7 +26,7 @@ const tourSchema = mongoose.Schema(
     maxGroupSize: {
       type: Number,
       required: [true, 'The tour must have a max group size'],
-      min: [10, 'A tour must have a group size of 10 people at least'],
+      min: [5, 'A tour must have a group size of 10 people at least'],
     },
     difficulty: {
       type: String,
@@ -84,6 +84,35 @@ const tourSchema = mongoose.Schema(
     startDates: {
       type: [Date],
     },
+    startLocation: {
+      //GeoJSON
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+      },
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -108,6 +137,16 @@ tourSchema.pre('save', function (next) {
 tourSchema.pre(/^find/, function (next) {
   this.find({
     private: { $ne: true },
+  });
+
+  next();
+});
+
+//Creo Query Middleware per popolare guide
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
   });
 
   next();

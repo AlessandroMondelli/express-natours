@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Tour = require('../../models/tourModel');
 
 //Includo dati del file env
-dotenv.config({ path: '../../config.env' });
+dotenv.config({ path: './config.env' });
 
 //Recupero stringa per connessione a DB
 const db = process.env.DATABASE.replace(
@@ -28,9 +28,7 @@ mongoose
   });
 
 //Salvo in costante dati da file JSON
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
-);
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 //Funzione che importa dati da collection Tours nel DB
 const importData = async () => {
