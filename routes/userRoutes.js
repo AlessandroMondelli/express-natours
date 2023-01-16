@@ -9,6 +9,14 @@ const router = express.Router();
 router.post('/signup', authController.signupUser);
 router.post('/login', authController.login);
 
+//Me Route
+router.get(
+  '/me',
+  authController.protectRoute,
+  usersController.getMe,
+  usersController.getUser
+);
+
 //Routes Rigenerazione password
 router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-password/:token', authController.resetPassword);

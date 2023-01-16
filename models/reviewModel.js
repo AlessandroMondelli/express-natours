@@ -17,11 +17,11 @@ const reviewSchema = mongoose.Schema(
       default: Date.now(),
       select: false,
     },
-    // tour: {
-    //   type: mongoose.Schema.ObjectId,
-    //   ref: 'Tour',
-    //   required: [true, 'Review must belong to a tour.'],
-    // },
+    tour: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Tour',
+      required: [true, 'Review must belong to a tour.'],
+    },
     user: {
       type: mongoose.Schema.ObjectId,
       ref: 'User',
@@ -37,9 +37,6 @@ const reviewSchema = mongoose.Schema(
 //Query Middleware per popolare users
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
-    path: 'tour',
-    select: 'name',
-  }).populate({
     path: 'user',
     select: 'username photo -_id',
   });

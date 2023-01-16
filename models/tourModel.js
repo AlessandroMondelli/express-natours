@@ -125,6 +125,13 @@ tourSchema.virtual('durationWeeks').get(function () {
   return Math.floor(this.duration / 7);
 });
 
+//Eseguo virtual population per reviews
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
+});
+
 //Creo Model Middleware per eseguire istruzioni prima del salvataggio
 tourSchema.pre('save', function (next) {
   //Setto proprietà slug del tour in base al nome

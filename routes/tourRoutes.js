@@ -1,9 +1,13 @@
 const express = require('express');
 const tourController = require('../controllers/tourController'); //Import metodi da controller
 const authController = require('../controllers/authController'); //Import metodi auth da controller
+const reviewRouter = require('./reviewRoutes'); //Import router review
 
 //Creo router
 const router = express.Router();
+
+//Invio richiesta review per tour alla route di review, così che possa ricevere l'id del tour
+router.use('/:tourId/reviews', reviewRouter);
 
 //Creo route Alias per recuperare 5 top tours in base a rating e prezzo
 router

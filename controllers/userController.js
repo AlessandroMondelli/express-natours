@@ -1,7 +1,7 @@
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const asyncErrCheck = require('../utils/asyncErr');
-const APIFeatures = require('../utils/apiFeatures');
+const handlerFactory = require('../utils/handlerFactory');
 
 //Funzione che filtra oggetto in base a parametri
 const filterObj = (obj, ...fields) => {
@@ -21,53 +21,22 @@ const filterObj = (obj, ...fields) => {
 };
 
 //Handlers users
-exports.getUsers = asyncErrCheck(async (req, res, next) => {
-  //Calcolo numero utentis
-  const usersCont = await User.countDocuments();
+exports.getUsers = handlerFactory.getDocs(User);
 
-  //Utilizzo APIFeatures per aggiungere filters, ecc.
-  const usersFeatures = new APIFeatures(User.find(), req.query)
-    .filter()
-    .sort()
-    .selectFields()
-    .pagination(usersCont);
+exports.createUser = handlerFactory.createDoc(User);
 
-  //Recupero utenti da query modificata
-  const users = await usersFeatures.query;
+exports.getUser = handlerFactory.getDoc(User);
 
-  res.status(200).json({
-    status: 'success',
-    count: usersCont,
-    data: {
-      users,
-    },
-  });
-});
+exports.patchUser = handlerFactory.patchDoc(User);
 
-exports.createUser = (req, res) => {
-  res.status(500).json({
-    status: 'fail',
-    message: 'Route in costruzione',
-  });
-};
+exports.deleteUser = handlerFactory.deleteDoc(User);
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'fail',
-    message: 'Route in costruzione',
-  });
-};
-exports.patchUser = (req, res) => {
-  res.status(500).json({
-    status: 'fail',
-    message: 'Route in costruzione',
-  });
-};
-exports.deleteUser = (req, res) => {
-  res.status(500).json({
-    status: 'fail',
-    message: 'Route in costruzione',
-  });
+//Middleware da eseguire per /me endpoint
+exports.getMe = (req, res, next) => {
+  //Setto parametro user id per utilizzare factory function getDoc
+  req.params.id = req.user.id;
+
+  next();
 };
 
 exports.updateCurrentUser = asyncErrCheck(async (req, res, next) => {

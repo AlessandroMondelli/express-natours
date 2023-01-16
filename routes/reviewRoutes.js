@@ -3,13 +3,17 @@ const authController = require('../controllers/authController');
 const reviewController = require('../controllers/reviewController');
 
 //Creo router
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 //Creo routes reviews
 router
   .route('/')
-  .get(reviewController.getReviews)
-  .post(authController.protectRoute, reviewController.createReview);
+  .get(authController.protectRoute, reviewController.getReviews)
+  .post(
+    authController.protectRoute,
+    reviewController.setTourAndUserId,
+    reviewController.createReview
+  );
 
 router
   .route('/:id')
