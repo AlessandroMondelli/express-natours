@@ -5,31 +5,24 @@ const reviewController = require('../controllers/reviewController');
 //Creo router
 const router = express.Router({ mergeParams: true });
 
+//Proteggo con middleware tutte le reviews
+router.use(authController.protectRoute);
+
 //Creo routes reviews
 router
   .route('/')
-  .get(authController.protectRoute, reviewController.getReviews)
-  .post(
-    authController.protectRoute,
-    reviewController.setTourAndUserId,
-    reviewController.createReview
-  );
+  .get(reviewController.getReviews)
+  .post(reviewController.setTourAndUserId, reviewController.createReview);
 
 router
   .route('/:id')
-  .get(
-    authController.protectRoute,
-    authController.restrictTo('admin', 'guide'),
-    reviewController.getReview
-  )
+  .get(reviewController.getReview)
   .patch(
-    authController.protectRoute,
-    authController.restrictTo('admin', 'lead-guide'),
+    authController.restrictTo('user', 'admin'),
     reviewController.patchReview
   )
   .delete(
-    authController.protectRoute,
-    authController.restrictTo('admin', 'lead-guide'),
+    authController.restrictTo('user', 'admin'),
     reviewController.deleteReview
   );
 

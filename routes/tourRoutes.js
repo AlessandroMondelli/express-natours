@@ -28,15 +28,15 @@ router
 //Routes tours
 router
   .route('/')
-  .get(authController.protectRoute, tourController.getTours)
+  .get(tourController.getTours)
   .post(
     authController.protectRoute,
-    tourController.checkData,
+    authController.restrictTo('admin', 'lead-guide'),
     tourController.createTour
   );
 router
   .route('/:id')
-  .get(authController.protectRoute, tourController.getTour)
+  .get(tourController.getTour)
   .patch(
     authController.protectRoute,
     authController.restrictTo('admin', 'lead-guide'),

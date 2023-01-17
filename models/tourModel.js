@@ -39,8 +39,6 @@ const tourSchema = mongoose.Schema(
     ratingsAverage: {
       type: Number,
       default: 0,
-      min: [1, 'Rating must be above 1'],
-      max: [5, 'Rating must be below 5'],
     },
     ratingsQuantity: {
       type: Number,
@@ -119,6 +117,12 @@ const tourSchema = mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+//Creo indice per prezzo e ratings
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+
+//Creo indice per slug
+tourSchema.index({ slug: 1 });
 
 //Creo Virtual Property per durata tour in settimane
 tourSchema.virtual('durationWeeks').get(function () {

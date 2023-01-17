@@ -11,20 +11,6 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 };
 
-exports.checkData = (req, res, next) => {
-  //Creo metodo per controllo ID da utilizzare in un Param Middleware
-  const tour = req.body;
-
-  if (!tour.name || !tour.price) {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'Invalid name or price',
-    });
-  }
-
-  next();
-};
-
 //Handlers
 //Richiamo handler factory per lettura tours
 exports.getTours = handlerFactory.getDocs(Tour);

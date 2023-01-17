@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
+const Tour = require('./tourModel');
 
 const reviewSchema = mongoose.Schema(
   {
     review: {
       type: String,
       required: [true, "Review can't be empty"],
-      maxLength: [100, "The review can't exceed 100 characters."],
+      maxLength: [500, "The review can't exceed 100 characters."],
     },
     rating: {
       type: Number,
@@ -42,6 +43,56 @@ reviewSchema.pre(/^find/, function (next) {
   });
 
   next();
+});
+
+//Metodo statico per calcolo Ratings
+reviewSchema.statics.calcRatings = async function (tourId) {
+  //Utilizzo aggregation pipeline per recuperare ratings del tour
+  const stats = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: '$tour',
+        ratingsCount: { $sum: 1 },
+        ratingAvg: { $avg: '$rating' },
+      },
+    },
+  ]);
+
+  //Se ci sono delle reviews
+  if (stats.length > 0) {
+    //Salvo dati in tour
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: stats[0].ratingsCount,
+      ratingsAverage: stats[0].ratingAvg,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0,
+      ratingsAverage: 0,
+    });
+  }
+};
+
+//Utilizzo calcRatings per salvare ratings dopo il salvataggio dei dati
+reviewSchema.post('save', function () {
+  //this punta alla review attuale
+  this.constructor.calcRatings(this.tour);
+});
+
+//Query middleware per edit/delete reviews e aggiornamento dati in tour
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+  //Recupero document tramite query corrente
+  this.review = await this.findOne();
+
+  next();
+});
+
+//Query middleware post query per calcolare valori e passarli a tour
+reviewSchema.post(/^findOneAnd/, async function () {
+  this.review.constructor.calcRatings(this.review.tour);
 });
 
 const Review = mongoose.model('Review', reviewSchema);

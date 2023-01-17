@@ -9,36 +9,26 @@ const router = express.Router();
 router.post('/signup', authController.signupUser);
 router.post('/login', authController.login);
 
-//Me Route
-router.get(
-  '/me',
-  authController.protectRoute,
-  usersController.getMe,
-  usersController.getUser
-);
-
 //Routes Rigenerazione password
 router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-password/:token', authController.resetPassword);
-router.patch(
-  '/update-password',
-  authController.protectRoute,
-  authController.updatePassword
-);
+
+//Aggiungo middleware a router per proteggere ogni altra chiamata
+router.use(authController.protectRoute);
+
+router.patch('/update-password', authController.updatePassword);
+
+//Me Route
+router.get('/me', usersController.getMe, usersController.getUser);
 
 //Route modifica dati utente
-router.patch(
-  '/update-me',
-  authController.protectRoute,
-  usersController.updateCurrentUser
-);
+router.patch('/update-me', usersController.updateCurrentUser);
 
 //Route eliminazione utente
-router.delete(
-  '/delete-me',
-  authController.protectRoute,
-  usersController.deleteCurrentUser
-);
+router.delete('/delete-me', usersController.deleteCurrentUser);
+
+//Aggiungo middleware per funzioni admin
+router.use(authController.restrictTo('admin'));
 
 //Users Routes
 router
