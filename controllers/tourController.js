@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModel');
 const asyncErrCheck = require('../utils/asyncErr');
+const AppError = require('../utils/appError');
 const handlerFactory = require('../utils/handlerFactory');
 
 //Funzione aliasing per route top-5
@@ -26,6 +27,84 @@ exports.patchTour = handlerFactory.patchDoc(Tour);
 
 //Richiamo handler factory per eliminazione tour
 exports.deleteTour = handlerFactory.deleteDoc(Tour);
+
+//Handler che recupera tour in un certo radiante
+exports.getToursWithin = asyncErrCheck(async (req, res, next) => {
+  //Recupero parametri
+  const { distance, latlng, unit } = req.params;
+
+  //Separo latitudine e longitudine
+  const [lat, lng] = latlng.split(',');
+
+  //Controllo che latitudine e longitudine siano formattate correttamente
+  if (!lat || !lng) {
+    return next(
+      new AppError('Provide latitude and longitude in (lat,long) format.', 400)
+    );
+  }
+
+  //Calcolo raggio tramite radianti
+  const radius = unit === 'km' ? distance / 6378.1 : distance / 3963.2;
+
+  //Cerco tours in base a raggio
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    toursCont: tours.length,
+    data: {
+      tours,
+    },
+  });
+});
+
+//Handler che calcola distanza tours da un punto
+exports.getToursDistances = asyncErrCheck(async (req, res, next) => {
+  //Recupero parametri
+  const { latlng, unit } = req.params;
+
+  //Separo latitudine e longitudine
+  const [lat, lng] = latlng.split(',');
+
+  //Controllo che latitudine e longitudine siano formattate correttamente
+  if (!lat || !lng) {
+    return next(
+      new AppError('Provide latitude and longitude in (lat,long) format.', 400)
+    );
+  }
+
+  //Salvo moltiplicatore per convertire metri
+  const multiplier = unit === 'km' ? 0.001 : 0.000621371;
+
+  //Aggregare che recupera dati con distanze
+  const distances = await Tour.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1],
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier,
+      },
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1,
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      distances,
+    },
+  });
+});
 
 //Creo aggregation pipeline per Tours
 exports.getToursData = asyncErrCheck(async (req, res, next) => {

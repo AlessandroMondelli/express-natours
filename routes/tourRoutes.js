@@ -25,6 +25,16 @@ router
     tourController.getMonthlyPlan
   );
 
+//Route che calcola tour vicini in un determinato radiante
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourController.getToursWithin);
+
+//Route che calcola distanza tours da un punto
+router
+  .route('/distances/:latlng/unit/:unit')
+  .get(tourController.getToursDistances);
+
 //Routes tours
 router
   .route('/')

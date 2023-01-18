@@ -35,6 +35,9 @@ const reviewSchema = mongoose.Schema(
   }
 );
 
+//Creo indice unico per tour e user per evitare review dallo stesso utente
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 //Query Middleware per popolare users
 reviewSchema.pre(/^find/, function (next) {
   this.populate({

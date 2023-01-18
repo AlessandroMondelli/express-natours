@@ -39,6 +39,7 @@ const tourSchema = mongoose.Schema(
     ratingsAverage: {
       type: Number,
       default: 0,
+      set: (val) => Math.round(val * 10) / 10,
     },
     ratingsQuantity: {
       type: Number,
@@ -124,6 +125,9 @@ tourSchema.index({ price: 1, ratingsAverage: -1 });
 //Creo indice per slug
 tourSchema.index({ slug: 1 });
 
+//Creo indice per startLocation con sfera 2D
+tourSchema.index({ startLocation: '2dsphere' });
+
 //Creo Virtual Property per durata tour in settimane
 tourSchema.virtual('durationWeeks').get(function () {
   return Math.floor(this.duration / 7);
@@ -164,13 +168,13 @@ tourSchema.pre(/^find/, function (next) {
 });
 
 //Creo Aggregation Middleware per tours privati
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({
-    $match: { private: { $ne: true } },
-  });
+// tourSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({
+//     $match: { private: { $ne: true } },
+//   });
 
-  next();
-});
+//   next();
+// });
 
 //Creo Model per tour
 const Tour = mongoose.model('Tour', tourSchema);
