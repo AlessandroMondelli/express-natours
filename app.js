@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -17,7 +18,16 @@ const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express();
 
+//Set Pug per SSR
+app.set('view engine', 'pug');
+
+//Definisco path views
+app.set('views', path.join(__dirname, 'views'));
+
 //1 - MIDDLEWARES GLOBALI
+//Middleware per definire cartella file statici
+app.use(express.static(path.join(__dirname, 'public')));
+
 //Middleware per aggiungere headers di sicurezza aggiuntivi
 app.use(helmet());
 
@@ -57,6 +67,14 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use(express.json()); //Dichiaro middleware
+
+//Middleware per rendering pages
+app.get('/', (req, res) => {
+  res.status(200).render('base', {
+    tourName: 'Tour di Fermo',
+    tourDescr: 'Bellissimo tour di Fermo',
+  });
+});
 
 //Dichiaro middlewares per routers
 app.use('/api/v1/tours', tourRouter);
