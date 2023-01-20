@@ -12,6 +12,7 @@ const AppError = require('./utils/appError');
 const globalErrHandler = require('./utils/errHandler');
 
 //Importo routes
+const viewRouter = require('./routes/viewRoutes');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
@@ -68,15 +69,8 @@ app.use('/api', limiter);
 
 app.use(express.json()); //Dichiaro middleware
 
-//Middleware per rendering pages
-app.get('/', (req, res) => {
-  res.status(200).render('base', {
-    tourName: 'Tour di Fermo',
-    tourDescr: 'Bellissimo tour di Fermo',
-  });
-});
-
 //Dichiaro middlewares per routers
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
