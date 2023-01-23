@@ -10,6 +10,7 @@ exports.getOverview = asyncErrCheck(async (req, res) => {
     tours,
   });
 });
+
 exports.getTourDetails = asyncErrCheck(async (req, res) => {
   //Recupero dati tour
   const tour = await Tour.findOne({ slug: req.params.slug }).populate({
@@ -17,8 +18,14 @@ exports.getTourDetails = asyncErrCheck(async (req, res) => {
     fields: 'review rating user',
   });
 
-  await res.status(200).render('blocks/tour', {
+  res.status(200).render('blocks/tour', {
     title: tour.name,
     tour,
+  });
+});
+
+exports.login = asyncErrCheck(async (req, res, next) => {
+  res.status(200).render('blocks/login', {
+    title: 'Login',
   });
 });

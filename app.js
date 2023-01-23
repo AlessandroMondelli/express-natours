@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -30,7 +31,11 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Middleware per aggiungere headers di sicurezza aggiuntivi
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+  })
+);
 
 //Middleware che fa sanitize delle request per evitare NoSQL Injections
 app.use(mongoSanitize());
@@ -67,7 +72,9 @@ const limiter = rateLimit({
 
 app.use('/api', limiter);
 
-app.use(express.json()); //Dichiaro middleware
+//Dichiaro middlewares per compatibilità JSON e Cookies in back end
+app.use(express.json());
+app.use(cookieParser());
 
 //Dichiaro middlewares per routers
 app.use('/', viewRouter);

@@ -1,11 +1,14 @@
 doctype html 
 head 
-  title Natours | #{title}
-  meta(charset='UTF-8')
-  meta(name='viewport' content='width=device-width, initial-scale=1.0')
-  link(rel='stylesheet' type='image/png' href='img/favicon.png')
-  link(href='http://fonts.googleapis.com/css?family=Lato:300,300i,700' rel='stylesheet')
-  link(rel='stylesheet' href='/css/style.css')
+  block head
+    title Natours | #{title}
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    link(rel='stylesheet' type='image/png' href='img/favicon.png')
+    link(rel='preconnect' href='https://fonts.googleapis.com')
+    link(rel='preconnect' href="https://fonts.gstatic.com" crossorigin)
+    link(href='https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,700;1,300&display=swap' rel='stylesheet')
+    link(rel='stylesheet' href='/css/style.css')
 
 body 
   //-Header
