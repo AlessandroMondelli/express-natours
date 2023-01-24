@@ -1,10 +1,13 @@
 /* eslint-disable */
-const login = async (email, password) => {
+import axios from 'axios';
+import { showAlert } from './alerts';
+
+export const login = async (email, password) => {
   try {
     //Chiamata axios a API
     const res = await axios({
       method: 'POST',
-      url: 'http://127.0.0.1:3000/api/v1/users/login',
+      url: 'http://localhost:3000/api/v1/users/login',
       data: {
         email,
         password,
@@ -13,20 +16,30 @@ const login = async (email, password) => {
 
     //Se la richiesta ha avuto successo reindirizzo utente
     if (res.data.status === 'success') {
+      showAlert('success', 'Logged in successfully');
+
       window.setTimeout(() => {
         location.assign('/');
       }, 1000);
     }
   } catch (err) {
-    console.log(err.response.data);
+    showAlert('error', err.response.data.message);
   }
 };
 
-//Recupero dati ad invio del form
-document.querySelector('.form').addEventListener('submit', (e) => {
-  e.preventDefault();
+export const logout = async () => {
+  try {
+    //Chiamata axios a API
+    const res = await axios({
+      method: 'GET',
+      url: 'http://localhost:3000/api/v1/users/logout',
+    });
 
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  login(email, password);
-});
+    //Se la richiesta ha avuto successo reindirizzo utente
+    if (res.data.status === 'success') {
+      location.reload(true);
+    }
+  } catch (err) {
+    showAlert('error', err.response.data.message);
+  }
+};

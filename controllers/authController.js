@@ -78,11 +78,21 @@ exports.login = asyncErrCheck(async (req, res, next) => {
       (await userData.passwordCheck(req.body.password, userData.password))
     )
   ) {
-    return next(new AppError('Wrong email or password.', 404));
+    return next(new AppError('Wrong email or password.', 403));
   }
 
   loginUserToken(res, userData, 200);
 });
+
+exports.logout = (req, res) => {
+  //Invio cookie vuoto a client
+  res.cookie('jwt', 'null', {
+    expires: new Date(Date.now() - 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ status: 'success' });
+};
 
 //Metodo per proteggere routes da utenti non loggati
 exports.protectRoute = asyncErrCheck(async (req, res, next) => {
@@ -102,7 +112,7 @@ exports.protectRoute = asyncErrCheck(async (req, res, next) => {
 
   //Se il token non è presente
   if (!token) {
-    return next(new AppError('Login to enter this area.', 400));
+    return next(new AppError('Login to enter this area.', 403));
   }
 
   //Controllo token
@@ -131,41 +141,47 @@ exports.protectRoute = asyncErrCheck(async (req, res, next) => {
   }
 
   req.user = currentUser;
+  //Se l'utente è loggato, salvo in locals l'utente per utilizzare dati in template
+  res.locals.user = currentUser;
 
   next();
 });
 
 //Metodo per controllare se l'utente corrente sia loggato
-exports.isLoggedIn = asyncErrCheck(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
   //Controllo che la richiesta abbia un token
   if (req.cookies.jwt) {
-    //Controllo validità token
-    const decodedToken = await promisify(jwt.verify)(
-      req.cookies.jwt,
-      process.env.JWT_SECRET_KEY
-    );
+    try {
+      //Controllo validità token
+      const decodedToken = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET_KEY
+      );
 
-    //Controllo che l'utente esista ancora
-    const currentUser = await User.findById(decodedToken.id);
-    //Se non esiste, passo a prossimo middleware
-    if (!currentUser) {
+      //Controllo che l'utente esista ancora
+      const currentUser = await User.findById(decodedToken.id);
+      //Se non esiste, passo a prossimo middleware
+      if (!currentUser) {
+        return next();
+      }
+
+      //Controllo che non sia stata modificata la password dopo la creazione del token
+      if (currentUser.checkNewPasswordDate(decodedToken.iat)) {
+        //Se la password è stata cambiara recentemente, ritorno un errore
+        return next();
+      }
+
+      //Se l'utente è loggato, salvo in locals l'utente per utilizzare dati in template
+      res.locals.user = currentUser;
+      return next();
+    } catch (err) {
       return next();
     }
-
-    //Controllo che non sia stata modificata la password dopo la creazione del token
-    if (currentUser.checkNewPasswordDate(decodedToken.iat)) {
-      //Se la password è stata cambiara recentemente, ritorno un errore
-      return next();
-    }
-
-    //Se l'utente è loggato, salvo in locals l'utente per utilizzare dati in template
-    res.locals.user = currentUser;
-    return next();
   }
 
   //Se non è presente il cookie, passo direttamente a prossimo middleware
   next();
-});
+};
 
 //Metodo che blocca accesso a sezioni che richiedo un determinato ruolo
 exports.restrictTo =
