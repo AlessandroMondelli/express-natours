@@ -559,12 +559,13 @@ function hmrAccept(bundle, id) {
 },{}],"f2QDv":[function(require,module,exports) {
 /* eslint-disable */ var _login = require("./login");
 var _mapbox = require("./mapbox");
-var _updateAccount = require("./updateAccount");
-var _updatePassword = require("./updatePassword");
+var _updateUser = require("./updateUser");
 //Recupero bottone logout
 const logoutBtn = document.querySelector(".nav__el--logout");
-//Recupero dati ad invio del form
+//Recupero form login
 const loginForm = document.querySelector(".login-form .form");
+//Recuper form sign up
+const signUpForm = document.querySelector(".signup-form .form");
 //Prendo elemento map
 const mapDocument = document.getElementById("map");
 //Prendo form aggiornamento account
@@ -578,6 +579,21 @@ if (loginForm) loginForm.addEventListener("submit", (e)=>{
     const password = document.getElementById("password").value;
     (0, _login.login)(email, password);
 });
+if (signUpForm) signUpForm.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    //Recupero dati
+    const username = document.getElementById("username").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("password-confirm").value;
+    //Salvo dati
+    (0, _login.signUp)({
+        username,
+        email,
+        password,
+        passwordConfirm
+    });
+});
 if (mapDocument) {
     //Se esiste, recupero locations da tour.pug
     const locations = JSON.parse(mapDocument.dataset.locations);
@@ -585,27 +601,39 @@ if (mapDocument) {
 }
 if (updateUserForm) updateUserForm.addEventListener("submit", (e)=>{
     e.preventDefault();
-    const username = document.getElementById("username").value;
-    const email = document.getElementById("email").value;
-    (0, _updateAccount.updateAccount)(username, email);
+    //Ricreo form data per passare anche immagine
+    const form = new FormData();
+    form.append("username", document.getElementById("username").value);
+    form.append("email", document.getElementById("email").value);
+    form.append("photo", document.getElementById("photo").files[0]);
+    (0, _updateUser.updateUser)("data", form);
 });
 if (updatePasswordForm) updatePasswordForm.addEventListener("submit", async (e)=>{
     e.preventDefault();
+    //modifico testo pulsante
     document.querySelector(".btn--save-password").textContent = "Updating...";
+    //Recupero dati
     const oldPassword = document.getElementById("password-current").value;
     const newPassword = document.getElementById("password").value;
     const confirmPassword = document.getElementById("password-confirm").value;
-    await (0, _updatePassword.updatePassword)(oldPassword, newPassword, confirmPassword);
+    //Aggiorno dati
+    await (0, _updateUser.updateUser)("password", {
+        oldPassword,
+        newPassword,
+        confirmPassword
+    });
+    //Inizializzo form
     document.getElementById("password-current").value = "";
     document.getElementById("password").value = "";
     document.getElementById("password-confirm").value = "";
     document.querySelector(".btn--save-password").textContent = "Save password";
 });
 
-},{"./login":"7yHem","./mapbox":"3zDlz","./updateAccount":"2J59h","./updatePassword":"nGra2"}],"7yHem":[function(require,module,exports) {
+},{"./login":"7yHem","./mapbox":"3zDlz","./updateUser":"575AG"}],"7yHem":[function(require,module,exports) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "login", ()=>login);
+parcelHelpers.export(exports, "signUp", ()=>signUp);
 parcelHelpers.export(exports, "logout", ()=>logout);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
@@ -627,6 +655,23 @@ const login = async (email, password)=>{
             window.setTimeout(()=>{
                 location.assign("/");
             }, 1000);
+        }
+    } catch (err) {
+        (0, _alerts.showAlert)("error", err.response.data.message);
+    }
+};
+const signUp = async (data)=>{
+    try {
+        const res = await (0, _axiosDefault.default)({
+            method: "POST",
+            url: "http://localhost:3000/api/v1/users/signup",
+            data
+        });
+        if (res.data.status === "success") {
+            (0, _alerts.showAlert)("success", `Welcome to Natours, ${data.username}`);
+            setTimeout(()=>{
+                location.assign("/");
+            }, 1500);
         }
     } catch (err) {
         (0, _alerts.showAlert)("error", err.response.data.message);
@@ -34570,52 +34615,29 @@ const createMap = (locations)=>{
     return mapboxgl$1;
 });
 
-},{}],"2J59h":[function(require,module,exports) {
+},{}],"575AG":[function(require,module,exports) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "updateAccount", ()=>updateAccount);
+parcelHelpers.export(exports, "updateUser", ()=>updateUser);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-const updateAccount = async (username, email)=>{
+const updateUser = async (type, data)=>{
     try {
+        //definisco url in base a richiesta
+        const url = type === "data" ? "http://localhost:3000/api/v1/users/update-me/" : "http://localhost:3000/api/v1/users/update-password/";
         const res = await (0, _axiosDefault.default)({
             method: "PATCH",
-            url: "http://localhost:3000/api/v1/users/update-me/",
-            data: {
-                username,
-                email
-            }
+            url,
+            data
         });
         //Se la richiesta ha avuto successo reindirizzo utente
-        if (res.data.status === "success") (0, _alerts.showAlert)("success", "Account updated");
+        if (res.data.status === "success") {
+            if (type === "data") (0, _alerts.showAlert)("success", "Account updated");
+            else if (type === "password") (0, _alerts.showAlert)("success", "Password updated");
+        }
     } catch (err) {
         (0, _alerts.showAlert)("error", err);
-    }
-};
-
-},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"6Mcnf"}],"nGra2":[function(require,module,exports) {
-/* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "updatePassword", ()=>updatePassword);
-var _axios = require("axios");
-var _axiosDefault = parcelHelpers.interopDefault(_axios);
-var _alerts = require("./alerts");
-const updatePassword = async (oldPassword, newPassword, newPasswordConfirm)=>{
-    try {
-        const res = await (0, _axiosDefault.default)({
-            method: "PATCH",
-            url: "http://localhost:3000/api/v1/users/update-password/",
-            data: {
-                oldPassword,
-                newPassword,
-                newPasswordConfirm
-            }
-        });
-        if (res.data.status === "success") (0, _alerts.showAlert)("success", "Password updated correctly.");
-    } catch (err) {
-        console.log(err.response.message);
-        (0, _alerts.showAlert)("error", "An error occurred while updating the password. Retry.");
     }
 };
 

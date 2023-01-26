@@ -29,13 +29,19 @@ exports.getTourDetails = asyncErrCheck(async (req, res, next) => {
   });
 });
 
-exports.login = (req, res, next) => {
+exports.login = (req, res) => {
   res.status(200).render('blocks/login', {
     title: 'Login',
   });
 };
 
-exports.account = (req, res, next) => {
+exports.signUp = (req, res) => {
+  res.status(200).render('blocks/signUp', {
+    title: 'Sign Up',
+  });
+};
+
+exports.account = (req, res) => {
   res.status(200).render('blocks/account', {
     title: 'Your Account',
   });

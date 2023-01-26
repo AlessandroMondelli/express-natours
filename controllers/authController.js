@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const AppError = require('../utils/appError');
 const User = require('../models/userModel');
 const asyncErrCheck = require('../utils/asyncErr');
-const sendEmail = require('../utils/email');
+const Email = require('../utils/email');
 
 //Funzione che genera JWT
 const signToken = (id) =>
@@ -53,6 +53,10 @@ exports.signupUser = asyncErrCheck(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
   });
+
+  //invio email di benvenuto
+  const url = `${req.protocol}://${req.host}/me`;
+  await new Email(newUser, url).sendWelcome();
 
   //Invio token e risposta
   loginUserToken(res, newUser, 201);
@@ -212,21 +216,13 @@ exports.forgotPassword = asyncErrCheck(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   //Invio email con token
-  //Creo url per rigenerazione password
-  const resetUrl = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/users/reset-password/${token}`;
-
-  //Creo messaggio da inviare all'utente
-  const message = `Send a PATCH request to this url (${resetUrl}) with your new password and passwordConfirm.`;
-
-  //Invio email
   try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Reset password - Natours',
-      message,
-    });
+    //Creo url per rigenerazione password
+    const resetUrl = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/users/reset-password/${token}`;
+
+    await new Email(user, resetUrl).resetPassword();
 
     res.status(200).json({
       status: 'success',

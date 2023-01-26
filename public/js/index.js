@@ -1,14 +1,16 @@
 /* eslint-disable */
-import { login, logout } from './login';
+import { login, logout, signUp } from './login';
 import { createMap } from './mapbox';
-import { updateAccount } from './updateAccount';
-import { updatePassword } from './updatePassword';
+import { updateUser } from './updateUser';
 
 //Recupero bottone logout
 const logoutBtn = document.querySelector('.nav__el--logout');
 
-//Recupero dati ad invio del form
+//Recupero form login
 const loginForm = document.querySelector('.login-form .form');
+
+//Recuper form sign up
+const signUpForm = document.querySelector('.signup-form .form');
 
 //Prendo elemento map
 const mapDocument = document.getElementById('map');
@@ -33,6 +35,21 @@ if (loginForm) {
   });
 }
 
+if (signUpForm) {
+  signUpForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    //Recupero dati
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const passwordConfirm = document.getElementById('password-confirm').value;
+
+    //Salvo dati
+    signUp({ username, email, password, passwordConfirm });
+  });
+}
+
 if (mapDocument) {
   //Se esiste, recupero locations da tour.pug
   const locations = JSON.parse(mapDocument.dataset.locations);
@@ -43,9 +60,13 @@ if (updateUserForm) {
   updateUserForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const username = document.getElementById('username').value;
-    const email = document.getElementById('email').value;
-    updateAccount(username, email);
+    //Ricreo form data per passare anche immagine
+    const form = new FormData();
+    form.append('username', document.getElementById('username').value);
+    form.append('email', document.getElementById('email').value);
+    form.append('photo', document.getElementById('photo').files[0]);
+
+    updateUser('data', form);
   });
 }
 
@@ -53,14 +74,18 @@ if (updatePasswordForm) {
   updatePasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    //modifico testo pulsante
     document.querySelector('.btn--save-password').textContent = 'Updating...';
 
+    //Recupero dati
     const oldPassword = document.getElementById('password-current').value;
     const newPassword = document.getElementById('password').value;
     const confirmPassword = document.getElementById('password-confirm').value;
 
-    await updatePassword(oldPassword, newPassword, confirmPassword);
+    //Aggiorno dati
+    await updateUser('password', { oldPassword, newPassword, confirmPassword });
 
+    //Inizializzo form
     document.getElementById('password-current').value = '';
     document.getElementById('password').value = '';
     document.getElementById('password-confirm').value = '';

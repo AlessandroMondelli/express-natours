@@ -1,7 +1,81 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const Tour = require('../models/tourModel');
 const asyncErrCheck = require('../utils/asyncErr');
 const AppError = require('../utils/appError');
 const handlerFactory = require('../utils/handlerFactory');
+
+//Multer per aggiornamento immagini tour
+//Setto local storage per multer
+const multerStorage = multer.memoryStorage();
+
+//Aggiungo filtro per immagini
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('File not supported.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+//Middleware Upload immagine
+exports.uploadTourImages = upload.fields([
+  {
+    name: 'imageCover',
+    maxCount: 1,
+  },
+  {
+    name: 'images',
+    maxCount: 3,
+  },
+]);
+
+//Middleware ottimizzazione immagine
+exports.resizeTourImages = asyncErrCheck(async (req, res, next) => {
+  //Se non ci sono immagini passo al prossimo middleware
+  if (!req.files.imageCover || !req.files.images) return next();
+
+  //Cover image
+  //Aggiungo nome file a body
+  req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpg`;
+
+  //Ottimizzo immagine
+  await sharp(req.files.imageCover[0].buffer)
+    .resize(2000, 1333)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/tours/${req.body.imageCover}`);
+
+  //Images
+  //preparo array dove caricare nomi immagini
+  req.body.images = [];
+
+  //Attendo che tutte le promise siano risolte
+  await Promise.all(
+    //itero immagini
+    req.files.images.map(async (file, i) => {
+      //genero nome
+      const imageName = `tour-${req.params.id}-${Date.now()}-${i}.jpg`;
+
+      //ottimizzo immagine
+      await sharp(file.buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${imageName}`);
+
+      //Salvo nome immagine in body
+      req.body.images.push(imageName);
+    })
+  );
+
+  next();
+});
 
 //Funzione aliasing per route top-5
 exports.aliasTopTours = (req, res, next) => {

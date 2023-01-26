@@ -15,6 +15,8 @@ router.get(
 
 router.get('/login', authController.isLoggedIn, viewController.login);
 
+router.get('/sign-up', authController.isLoggedIn, viewController.signUp);
+
 router.get('/me', authController.protectRoute, viewController.account);
 
 module.exports = router;

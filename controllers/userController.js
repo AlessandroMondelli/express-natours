@@ -1,7 +1,48 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const asyncErrCheck = require('../utils/asyncErr');
 const handlerFactory = require('../utils/handlerFactory');
+
+//Setto local storage per multer
+const multerStorage = multer.memoryStorage();
+
+//Aggiungo filtro per immagini
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('File not supported.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+//Middleware Upload immagine
+exports.uploadUserPhoto = upload.single('photo');
+
+//Middleware resize
+exports.resizeUserPhoto = (req, res, next) => {
+  if (!req.file) {
+    return next();
+  }
+
+  //Setto filename nella request, per utilizzarlo nel prossimo middleware
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  //Resize immagine
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+};
 
 //Funzione che filtra oggetto in base a parametri
 const filterObj = (obj, ...fields) => {
@@ -48,6 +89,9 @@ exports.updateCurrentUser = asyncErrCheck(async (req, res, next) => {
   //Aggiorno dati utenti
   //Filtro prima l'oggetto per non permettere di modificare dati sensibili
   const filteredUser = filterObj(req.body, 'username', 'email');
+
+  //Salvo nuova foto in database
+  if (req.file) filteredUser.photo = req.file.filename;
 
   //Aggiorno dati
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredUser, {

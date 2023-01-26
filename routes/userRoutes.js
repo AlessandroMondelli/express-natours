@@ -23,7 +23,12 @@ router.patch('/update-password', authController.updatePassword);
 router.get('/me', usersController.getMe, usersController.getUser);
 
 //Route modifica dati utente
-router.patch('/update-me', usersController.updateCurrentUser);
+router.patch(
+  '/update-me',
+  usersController.uploadUserPhoto,
+  usersController.resizeUserPhoto,
+  usersController.updateCurrentUser
+);
 
 //Route eliminazione utente
 router.delete('/delete-me', usersController.deleteCurrentUser);
