@@ -55,7 +55,7 @@ exports.signupUser = asyncErrCheck(async (req, res, next) => {
   });
 
   //invio email di benvenuto
-  const url = `${req.protocol}://${req.host}/me`;
+  const url = `${req.protocol}://${req.hostname}:${process.env.PORT}}/me`;
   await new Email(newUser, url).sendWelcome();
 
   //Invio token e risposta

@@ -7,12 +7,22 @@ module.exports = class Email {
     this.username = user.username;
     this.to = user.email;
     this.url = url;
-    this.from = process.env.MAIL_FROM;
+    this.from =
+      process.env.NODE_ENV === 'development'
+        ? process.env.MAIL_FROM
+        : process.env.SENDGRID_TEMP;
   }
 
   newTransport() {
     if (process.env.NODE_ENV === 'production') {
-      return 1;
+      //Utilizzo SendGrid per environment
+      return nodemailer.createTransport({
+        service: 'SendGrid',
+        auth: {
+          user: process.env.SENDGRID_USER,
+          pass: process.env.SENDGRID_KEY,
+        },
+      });
     }
 
     //Creo transporter

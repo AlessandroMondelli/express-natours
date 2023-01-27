@@ -2,7 +2,7 @@ const AppError = require('./appError');
 
 //Funzione per inviare messaggio per valori duplicati
 const handleDuplicateFieldsDB = (err) => {
-  const message = `Duplicate field value: ${err.keyValue.name}.`;
+  const message = `This ${Object.keys(err.keyValue)[0]} already exists.`;
 
   return new AppError(message, 400);
 };

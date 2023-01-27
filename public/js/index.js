@@ -2,6 +2,7 @@
 import { login, logout, signUp } from './login';
 import { createMap } from './mapbox';
 import { updateUser } from './updateUser';
+import { bookTour } from './stripe';
 
 //Recupero bottone logout
 const logoutBtn = document.querySelector('.nav__el--logout');
@@ -20,6 +21,9 @@ const updateUserForm = document.querySelector('.form-user-data');
 
 //Prendo form aggiornamento password
 const updatePasswordForm = document.querySelector('.form-user-settings');
+
+//Prendo elemento booking
+const bookBtn = document.getElementById('book-tour');
 
 if (logoutBtn) {
   logoutBtn.addEventListener('click', logout);
@@ -48,12 +52,6 @@ if (signUpForm) {
     //Salvo dati
     signUp({ username, email, password, passwordConfirm });
   });
-}
-
-if (mapDocument) {
-  //Se esiste, recupero locations da tour.pug
-  const locations = JSON.parse(mapDocument.dataset.locations);
-  createMap(locations);
 }
 
 if (updateUserForm) {
@@ -92,4 +90,23 @@ if (updatePasswordForm) {
 
     document.querySelector('.btn--save-password').textContent = 'Save password';
   });
+}
+
+if (bookBtn) {
+  bookBtn.addEventListener('click', (e) => {
+    //Modifico testo pulsante
+    e.target.textContent = 'Processing...';
+
+    //Recupero tour id da dataset
+    const { tourId } = e.target.dataset;
+
+    //Richiamo funzione per gestire checkout
+    bookTour(tourId);
+  });
+}
+
+if (mapDocument) {
+  //Se esiste, recupero locations da tour.pug
+  const locations = JSON.parse(mapDocument.dataset.locations);
+  createMap(locations);
 }

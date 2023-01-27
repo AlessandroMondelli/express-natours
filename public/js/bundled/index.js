@@ -560,6 +560,7 @@ function hmrAccept(bundle, id) {
 /* eslint-disable */ var _login = require("./login");
 var _mapbox = require("./mapbox");
 var _updateUser = require("./updateUser");
+var _stripe = require("./stripe");
 //Recupero bottone logout
 const logoutBtn = document.querySelector(".nav__el--logout");
 //Recupero form login
@@ -572,6 +573,8 @@ const mapDocument = document.getElementById("map");
 const updateUserForm = document.querySelector(".form-user-data");
 //Prendo form aggiornamento password
 const updatePasswordForm = document.querySelector(".form-user-settings");
+//Prendo elemento booking
+const bookBtn = document.getElementById("book-tour");
 if (logoutBtn) logoutBtn.addEventListener("click", (0, _login.logout));
 if (loginForm) loginForm.addEventListener("submit", (e)=>{
     e.preventDefault();
@@ -594,11 +597,6 @@ if (signUpForm) signUpForm.addEventListener("submit", (e)=>{
         passwordConfirm
     });
 });
-if (mapDocument) {
-    //Se esiste, recupero locations da tour.pug
-    const locations = JSON.parse(mapDocument.dataset.locations);
-    (0, _mapbox.createMap)(locations);
-}
 if (updateUserForm) updateUserForm.addEventListener("submit", (e)=>{
     e.preventDefault();
     //Ricreo form data per passare anche immagine
@@ -628,8 +626,21 @@ if (updatePasswordForm) updatePasswordForm.addEventListener("submit", async (e)=
     document.getElementById("password-confirm").value = "";
     document.querySelector(".btn--save-password").textContent = "Save password";
 });
+if (bookBtn) bookBtn.addEventListener("click", (e)=>{
+    //Modifico testo pulsante
+    e.target.textContent = "Processing...";
+    //Recupero tour id da dataset
+    const { tourId  } = e.target.dataset;
+    //Richiamo funzione per gestire checkout
+    (0, _stripe.bookTour)(tourId);
+});
+if (mapDocument) {
+    //Se esiste, recupero locations da tour.pug
+    const locations = JSON.parse(mapDocument.dataset.locations);
+    (0, _mapbox.createMap)(locations);
+}
 
-},{"./login":"7yHem","./mapbox":"3zDlz","./updateUser":"575AG"}],"7yHem":[function(require,module,exports) {
+},{"./login":"7yHem","./mapbox":"3zDlz","./updateUser":"575AG","./stripe":"10tSC"}],"7yHem":[function(require,module,exports) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "login", ()=>login);
@@ -34636,6 +34647,28 @@ const updateUser = async (type, data)=>{
             if (type === "data") (0, _alerts.showAlert)("success", "Account updated");
             else if (type === "password") (0, _alerts.showAlert)("success", "Password updated");
         }
+    } catch (err) {
+        (0, _alerts.showAlert)("error", err);
+    }
+};
+
+},{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"10tSC":[function(require,module,exports) {
+/* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "bookTour", ()=>bookTour);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+const bookTour = async (tourId)=>{
+    try {
+        const stripe = Stripe("pk_test_51MUpXcGNQpU4yYkjhZt3IFrJfOkFQysKJpIFH9qfAE1qfpzKXa9Lcui39gIm6wUtSFJPDgqXzTPnnRorfGVlbp4V00LS0o77pN");
+        //Recupero sessione da backend
+        const session = await (0, _axiosDefault.default)(`http://localhost:3000/api/v1/bookings/checkout/${tourId}`);
+        console.log(session);
+        //Creo form checkout + pagamento
+        await stripe.redirectToCheckout({
+            sessionId: session.data.session.id
+        });
     } catch (err) {
         (0, _alerts.showAlert)("error", err);
     }
