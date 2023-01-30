@@ -1,6 +1,7 @@
 const Stripe = require('stripe');
 const Tour = require('../models/tourModel');
-// const factory = require('../utils/handlerFactory');
+const Booking = require('../models/bookingModel');
+const factory = require('../utils/handlerFactory');
 const asyncErrCheck = require('../utils/asyncErr');
 const AppError = require('../utils/appError');
 
@@ -14,7 +15,9 @@ exports.getCheckoutSession = asyncErrCheck(async (req, res, next) => {
     //Creo sessione checkout
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      success_url: `${req.protocol}://${req.get('host')}/`,
+      success_url: `${req.protocol}://${req.get('host')}/?tour=${
+        req.params.tourId
+      }&user=${req.user.id}&price=${tour.price}`,
       cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
       customer_email: req.user.email,
       client_reference_id: req.params.tourId,
@@ -44,3 +47,37 @@ exports.getCheckoutSession = asyncErrCheck(async (req, res, next) => {
     next(new AppError(`Stripe session error: ${err}`, 400));
   }
 });
+
+//Metodo non sicuro che crea bookings dopo checkout
+//TODO: utilizzare stripe webhooks in produzione
+exports.createBookingAfterCheckout = asyncErrCheck(async (req, res, next) => {
+  //Recupero dati da url
+  const { tour, user, price } = req.query;
+
+  //Controllo che esistano
+  if (!tour || !user || !price) return next();
+
+  //Creo document
+  await Booking.create({ tour, user, price });
+
+  //Redirect a pagina originale senza query string
+  res.redirect(req.originalUrl.split('?')[0]);
+});
+
+//Metodo per controllare che l'user abbia la prenotazione
+exports.hasUserBooked = asyncErrCheck(async (req, res, next) => {
+  const book = await Booking.find({ tour: req.body.tour, user: req.body.user });
+
+  if (book.length === 0) {
+    return next(new AppError('You must buy the tour to write a review.', 401));
+  }
+
+  next();
+});
+
+//Metodi CRUD per API
+exports.getBookings = factory.getDocs(Booking);
+exports.getBooking = factory.getDoc(Booking);
+exports.createBooking = factory.createDoc(Booking);
+exports.patchBooking = factory.patchDoc(Booking);
+exports.deleteBooking = factory.deleteDoc(Booking);

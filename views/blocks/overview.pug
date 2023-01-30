@@ -22,7 +22,7 @@ block content
             .card__data
               svg.card__icon
                 use(xlink:href='/img/icons.svg#icon-calendar')
-              span= tour.startDates[0].toISOString().split('T')[0]
+              span= tour.startDates[0].date.toISOString().split('T')[0]
             .card__data
               svg.card__icon
                 use(xlink:href='/img/icons.svg#icon-flag')

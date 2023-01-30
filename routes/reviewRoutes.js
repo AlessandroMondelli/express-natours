@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const reviewController = require('../controllers/reviewController');
+const bookingController = require('../controllers/bookingController');
 
 //Creo router
 const router = express.Router({ mergeParams: true });
@@ -12,7 +13,11 @@ router.use(authController.protectRoute);
 router
   .route('/')
   .get(reviewController.getReviews)
-  .post(reviewController.setTourAndUserId, reviewController.createReview);
+  .post(
+    reviewController.setTourAndUserId,
+    bookingController.hasUserBooked,
+    reviewController.createReview
+  );
 
 router
   .route('/:id')

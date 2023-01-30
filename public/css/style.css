@@ -754,6 +754,12 @@ body {
   font-weight: 400;
 }
 
+.cta__dates {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .user-view {
   background-color: #fff;
   max-width: 120rem;

@@ -33,7 +33,7 @@ block content
       div 
         .overview-box__group 
           h2.heading-secondary.ma-bt-lg Quick facts 
-          - const date = tour.startDates[0].toISOString().split('T')[0]
+          - const date = tour.startDates[0].date.toISOString().split('T')[0]
           +overviewBox('calendar', 'Next date ', date)
           +overviewBox('trending-up', 'Difficulty', tour.difficulty)
           +overviewBox('user', 'Partecipants', tour.maxGroupSize)
@@ -45,13 +45,14 @@ block content
               img.overview-box__img(src=`/img/users/${guide.photo}`, alt=`guide ${guide.username} photo`)
               span.overview-box__laber= guide.role.split("-").join(" ").toUpperCase()
               span.overview-box__text - #{guide.username}
-      
-    .descripotion-box 
-      h2.heading-secondary.ma-bt-lg About the #{tour.name} tour 
-      .description-box
-        - const pars = tour.description.split("\n");
-        each par in pars
-          p.description__text= par
+    
+    - if(tour.description)
+      .description-box 
+        h2.heading-secondary.ma-bt-lg About the #{tour.name} tour 
+        .description-box
+          - const pars = tour.description.split("\n");
+          each par in pars
+            p.description__text= par
     
   section.section-pictures 
     each image, index in tour.images
@@ -90,7 +91,10 @@ block content
         h2.heading-secondary What are you waiting for?
         p.cta__text #{tour.duration} days. 1 adventure. Infinite memories. Make it yours today! 
         if user
-          button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book this tour now!
+          .cta__dates
+            - const dates = tour.startDates.map(el => el.date)
+            each date in dates
+              button.btn.btn--green#book-tour(data-tour-id=`${tour.id}` data-tour-date=`${date}`) Book the date #{date.toISOString().split('T')[0]}
         else 
           a.btn.btn--green.span-all-rows(href='/login') Login to book this tour
     

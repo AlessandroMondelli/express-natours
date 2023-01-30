@@ -80,9 +80,19 @@ const tourSchema = mongoose.Schema(
       default: Date.now(),
       select: false,
     },
-    startDates: {
-      type: [Date],
-    },
+    startDates: [
+      {
+        date: Date,
+        partecipants: {
+          type: Number,
+          default: 0,
+        },
+        soldOut: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
     startLocation: {
       //GeoJSON
       type: {

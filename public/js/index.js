@@ -98,7 +98,9 @@ if (bookBtn) {
     e.target.textContent = 'Processing...';
 
     //Recupero tour id da dataset
-    const { tourId } = e.target.dataset;
+    const { tourId, tourDate } = e.target.dataset;
+
+    console.log(tourDate);
 
     //Richiamo funzione per gestire checkout
     bookTour(tourId);

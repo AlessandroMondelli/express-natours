@@ -630,7 +630,8 @@ if (bookBtn) bookBtn.addEventListener("click", (e)=>{
     //Modifico testo pulsante
     e.target.textContent = "Processing...";
     //Recupero tour id da dataset
-    const { tourId  } = e.target.dataset;
+    const { tourId , tourDate  } = e.target.dataset;
+    console.log(tourDate);
     //Richiamo funzione per gestire checkout
     (0, _stripe.bookTour)(tourId);
 });

@@ -13,7 +13,7 @@ block content
       nav.user-view__menu
         ul.side-nav
           +menuEl('#', 'settings', true, 'Settings')
-          +menuEl('#', 'briefcase', false, 'My bookings')
+          +menuEl('/me/my-bookings', 'briefcase', false, 'My bookings')
           +menuEl('#', 'star', false, 'My reviews')
           +menuEl('#', 'credit-card', false, 'Billing')
         - if (user.role === 'admin')
@@ -23,7 +23,7 @@ block content
               +menuEl('#', 'map', false, 'Manage tours')
               +menuEl('#', 'users', false, 'Manage users')
               +menuEl('#', 'star', false, 'Manage reviews')
-              +menuEl('#', 'briefcase', false, 'Manage reviews')
+              +menuEl('#', 'briefcase', false, 'Manage Bookings')
 
       .user-view__content
         .user-view__form-container
