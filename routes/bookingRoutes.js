@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(authController.protectRoute);
 
 router.get(
-  '/checkout/:tourId',
+  '/checkout/:tourId/date/:year-:month-:day',
   // authController.restrictTo('user'),
   bookingController.getCheckoutSession
 );

@@ -1,6 +1,7 @@
 const express = require('express');
 const tourController = require('../controllers/tourController'); //Import metodi da controller
 const authController = require('../controllers/authController'); //Import metodi auth da controller
+const bookingController = require('../controllers/bookingController'); //Import metodi booking da controller
 const reviewRouter = require('./reviewRoutes'); //Import router review
 
 //Creo router
@@ -44,6 +45,8 @@ router
     authController.restrictTo('admin', 'lead-guide'),
     tourController.createTour
   );
+
+//Routes con parametro id tour
 router
   .route('/:id')
   .get(tourController.getTour)
@@ -58,6 +61,15 @@ router
     authController.protectRoute,
     authController.restrictTo('admin', 'lead-guide'),
     tourController.deleteTour
+  );
+
+//Route che fornisce le prenotazioni per un determinato tour
+router
+  .route('/:id/bookings')
+  .get(
+    authController.protectRoute,
+    authController.restrictTo('admin'),
+    bookingController.getBookingsByTour
   );
 
 module.exports = router;

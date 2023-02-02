@@ -98,12 +98,14 @@ if (bookBtn) {
     e.target.textContent = 'Processing...';
 
     //Recupero tour id da dataset
-    const { tourId, tourDate } = e.target.dataset;
+    const { tourId } = e.target.dataset;
 
-    console.log(tourDate);
+    //Recupero data scelta
+    const dateSelect = document.getElementById('tour-dates');
+    const date = dateSelect.options[dateSelect.selectedIndex].value;
 
     //Richiamo funzione per gestire checkout
-    bookTour(tourId);
+    bookTour(tourId, date);
   });
 }
 

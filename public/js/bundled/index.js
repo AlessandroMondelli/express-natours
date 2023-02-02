@@ -630,10 +630,12 @@ if (bookBtn) bookBtn.addEventListener("click", (e)=>{
     //Modifico testo pulsante
     e.target.textContent = "Processing...";
     //Recupero tour id da dataset
-    const { tourId , tourDate  } = e.target.dataset;
-    console.log(tourDate);
+    const { tourId  } = e.target.dataset;
+    //Recupero data scelta
+    const dateSelect = document.getElementById("tour-dates");
+    const date = dateSelect.options[dateSelect.selectedIndex].value;
     //Richiamo funzione per gestire checkout
-    (0, _stripe.bookTour)(tourId);
+    (0, _stripe.bookTour)(tourId, date);
 });
 if (mapDocument) {
     //Se esiste, recupero locations da tour.pug
@@ -34660,12 +34662,16 @@ parcelHelpers.export(exports, "bookTour", ()=>bookTour);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-const bookTour = async (tourId)=>{
+const bookTour = async (tourId, date)=>{
     try {
+        //Formatto data per passarla in parametro
+        const newDate = new Date(date);
+        const year = newDate.getFullYear();
+        const month = newDate.getMonth() + 1;
+        const day = newDate.getDate();
         const stripe = Stripe("pk_test_51MUpXcGNQpU4yYkjhZt3IFrJfOkFQysKJpIFH9qfAE1qfpzKXa9Lcui39gIm6wUtSFJPDgqXzTPnnRorfGVlbp4V00LS0o77pN");
         //Recupero sessione da backend
-        const session = await (0, _axiosDefault.default)(`http://localhost:3000/api/v1/bookings/checkout/${tourId}`);
-        console.log(session);
+        const session = await (0, _axiosDefault.default)(`http://localhost:3000/api/v1/bookings/checkout/${tourId}/date/${year}-${month}-${day}`);
         //Creo form checkout + pagamento
         await stripe.redirectToCheckout({
             sessionId: session.data.session.id

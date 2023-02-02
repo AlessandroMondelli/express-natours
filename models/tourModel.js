@@ -83,7 +83,7 @@ const tourSchema = mongoose.Schema(
     startDates: [
       {
         date: Date,
-        partecipants: {
+        participants: {
           type: Number,
           default: 0,
         },

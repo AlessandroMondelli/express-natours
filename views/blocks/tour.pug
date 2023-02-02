@@ -92,9 +92,12 @@ block content
         p.cta__text #{tour.duration} days. 1 adventure. Infinite memories. Make it yours today! 
         if user
           .cta__dates
-            - const dates = tour.startDates.map(el => el.date)
-            each date in dates
-              button.btn.btn--green#book-tour(data-tour-id=`${tour.id}` data-tour-date=`${date}`) Book the date #{date.toISOString().split('T')[0]}
+            select(name='tour-dates' id='tour-dates')
+              - const dates = tour.startDates.filter(el => !el.soldOut).map(el => el.date)
+              each date in dates
+                option(value=`${date}`) #{date.toISOString().split('T')[0]}
+                
+            button#book-tour.btn.btn--green(data-tour-id=`${tour.id}`) Book the tour
         else 
           a.btn.btn--green.span-all-rows(href='/login') Login to book this tour
     

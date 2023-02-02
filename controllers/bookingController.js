@@ -12,12 +12,17 @@ exports.getCheckoutSession = asyncErrCheck(async (req, res, next) => {
     //recupero tour corrente da parametro
     const tour = await Tour.findById(req.params.tourId);
 
+    //Recupero data scelta
+    const { year, month, day } = req.params;
+
     //Creo sessione checkout
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       success_url: `${req.protocol}://${req.get('host')}/?tour=${
         req.params.tourId
-      }&user=${req.user.id}&price=${tour.price}`,
+      }&user=${req.user.id}&price=${
+        tour.price
+      }&bookDate=${year}-${month}-${day}`,
       cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
       customer_email: req.user.email,
       client_reference_id: req.params.tourId,
@@ -52,16 +57,20 @@ exports.getCheckoutSession = asyncErrCheck(async (req, res, next) => {
 //TODO: utilizzare stripe webhooks in produzione
 exports.createBookingAfterCheckout = asyncErrCheck(async (req, res, next) => {
   //Recupero dati da url
-  const { tour, user, price } = req.query;
+  const { tour, user, price, bookDate } = req.query;
 
   //Controllo che esistano
   if (!tour || !user || !price) return next();
 
+  //Creo data recuperata da query
+  const date = new Date(bookDate);
+  date.setHours(1);
+
   //Creo document
-  await Booking.create({ tour, user, price });
+  await Booking.create({ tour, user, price, date });
 
   //Redirect a pagina originale senza query string
-  res.redirect(req.originalUrl.split('?')[0]);
+  next();
 });
 
 //Metodo per controllare che l'user abbia la prenotazione
@@ -69,10 +78,39 @@ exports.hasUserBooked = asyncErrCheck(async (req, res, next) => {
   const book = await Booking.find({ tour: req.body.tour, user: req.body.user });
 
   if (book.length === 0) {
-    return next(new AppError('You must buy the tour to write a review.', 401));
+    return next(new AppError('You must book the tour to write a review.', 401));
   }
 
   next();
+});
+
+exports.getBookingsByTour = asyncErrCheck(async (req, res, next) => {
+  try {
+    //Recupero url per richiesta
+    const urlReq = req.originalUrl;
+
+    //Recupero id
+    const idPar = req.params.id;
+
+    let bookingsByPar;
+
+    if (urlReq.includes('tour')) {
+      //Recupero bookings per tour
+      bookingsByPar = await Booking.find({ tour: idPar });
+    } else if (urlReq.includes('user')) {
+      //Recupero bookings per user
+      bookingsByPar = await Booking.find({ user: idPar });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        bookings: bookingsByPar,
+      },
+    });
+  } catch (err) {
+    next(new AppError('Error', 400));
+  }
 });
 
 //Metodi CRUD per API

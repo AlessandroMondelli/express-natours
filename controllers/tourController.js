@@ -211,6 +211,33 @@ exports.getToursData = asyncErrCheck(async (req, res, next) => {
   });
 });
 
+//Middleware che controlla disponibilità data
+exports.checkTourParticipants = asyncErrCheck(async (req, res, next) => {
+  const { tour, bookDate } = req.query;
+
+  if (!tour || !bookDate) return next();
+
+  //Creo data recuperata da query
+  const date = new Date(bookDate);
+  date.setHours(1);
+
+  const bookedTour = await Tour.findById(tour);
+
+  for (let i = 0; i < bookedTour.startDates.length; i++) {
+    if (bookedTour.startDates[i].date.getTime() === date.getTime()) {
+      bookedTour.startDates[i].participants += 1;
+
+      if (bookedTour.startDates[i].participants === bookedTour.maxGroupSize) {
+        bookedTour.startDates[i].soldOut = true;
+      }
+    }
+  }
+
+  await bookedTour.save();
+
+  res.redirect(req.originalUrl.split('?')[0]);
+});
+
 //Creo aggregation pipeline per fare una stima annuale dei tours
 exports.getMonthlyPlan = asyncErrCheck(async (req, res, next) => {
   //Recupero anno da url
@@ -224,7 +251,7 @@ exports.getMonthlyPlan = asyncErrCheck(async (req, res, next) => {
     {
       //Seleziono con query gli elementi che vanno dal 1 gennaio al 31 dicembre 2021
       $match: {
-        startDates: {
+        'startDates.date': {
           $gte: new Date(`${year}-01-01`),
           $lte: new Date(`${year}-12-31`),
         },
@@ -233,7 +260,7 @@ exports.getMonthlyPlan = asyncErrCheck(async (req, res, next) => {
     //Raggruppo valori per mese
     {
       $group: {
-        _id: { $month: '$startDates' },
+        _id: { $month: '$startDates.date' },
         toursStartCount: { $sum: 1 },
         tours: { $push: '$name' },
       },

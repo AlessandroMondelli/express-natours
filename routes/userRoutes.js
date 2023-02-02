@@ -1,6 +1,7 @@
 const express = require('express');
 const usersController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+const bookingController = require('../controllers/bookingController');
 
 //Creo router
 const router = express.Router();
@@ -46,5 +47,10 @@ router
   .get(usersController.getUser)
   .patch(usersController.patchUser)
   .delete(usersController.deleteUser);
+
+//Route che prende prenotazioni in base all'utente
+router
+  .route('/:id/bookings')
+  .get(authController.protectRoute, bookingController.getBookingsByTour);
 
 module.exports = router;

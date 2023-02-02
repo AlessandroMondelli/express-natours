@@ -2,6 +2,7 @@ const express = require('express');
 const viewController = require('../controllers/viewController');
 const authController = require('../controllers/authController');
 const bookingController = require('../controllers/bookingController');
+const tourController = require('../controllers/tourController');
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ router.get(
   '/',
   //Se c'è stato un checkout, creo il booking
   bookingController.createBookingAfterCheckout,
+  tourController.checkTourParticipants,
   authController.isLoggedIn,
   viewController.getOverview
 );
