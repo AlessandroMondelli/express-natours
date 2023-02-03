@@ -87,18 +87,25 @@ block content
       img.cta__img.cta__img--1(src=`/img/tours/${tour.images[0]}` alt='Natours logo')
       img.cta__img.cta__img--2(src=`/img/tours/${tour.images[1]}` alt='Natours logo')
 
+    
       .cta__content
-        h2.heading-secondary What are you waiting for?
-        p.cta__text #{tour.duration} days. 1 adventure. Infinite memories. Make it yours today! 
-        if user
-          .cta__dates
-            select(name='tour-dates' id='tour-dates')
-              - const dates = tour.startDates.filter(el => !el.soldOut).map(el => el.date)
-              each date in dates
-                option(value=`${date}`) #{date.toISOString().split('T')[0]}
-                
-            button#book-tour.btn.btn--green(data-tour-id=`${tour.id}`) Book the tour
+        if !hasUserBooked
+          .cta__wrap
+            h2.heading-secondary What are you waiting for?
+            p.cta__text #{tour.duration} days. 1 adventure. Infinite memories. Make it yours today! 
+            if user
+              .cta__dates
+                select(name='tour-dates' id='tour-dates')
+                  - const dates = tour.startDates.filter(el => !el.soldOut).map(el => el.date)
+                  each date in dates
+                    option(value=`${date}`) #{date.toISOString().split('T')[0]}
+                    
+                button#book-tour.btn.btn--green(data-tour-id=`${tour.id}`) Book the tour
+            else 
+              a.btn.btn--green.span-all-rows(href='/login') Login to book this tour
         else 
-          a.btn.btn--green.span-all-rows(href='/login') Login to book this tour
+          .cta__wrap
+            h2.heading-secondary Great, you're going to have a fantastic adventure!
+            p.cta__text=`Be ready, your tour will be the ${hasUserBooked.date.toISOString().split('T')[0]}`
     
   script(src='/js/mapbox.js') 

@@ -175,6 +175,9 @@ exports.isLoggedIn = async (req, res, next) => {
         return next();
       }
 
+      //Passo user in richiesta
+      req.user = currentUser;
+
       //Se l'utente è loggato, salvo in locals l'utente per utilizzare dati in template
       res.locals.user = currentUser;
       return next();

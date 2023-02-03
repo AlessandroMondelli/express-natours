@@ -20,6 +20,16 @@ exports.getTourDetails = asyncErrCheck(async (req, res, next) => {
     fields: 'review rating user',
   });
 
+  //controllo se l'utente ha già acquistato il tour
+  let hasUserBooked;
+
+  if (req.user) {
+    hasUserBooked = await Booking.findOne({
+      tour: tour.id,
+      user: req.user.id,
+    });
+  }
+
   if (!tour) {
     return next(new AppError('Tour not found.', 404));
   }
@@ -27,6 +37,7 @@ exports.getTourDetails = asyncErrCheck(async (req, res, next) => {
   res.status(200).render('blocks/tour', {
     title: tour.name,
     tour,
+    hasUserBooked,
   });
 });
 

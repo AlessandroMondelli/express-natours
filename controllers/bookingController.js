@@ -5,9 +5,29 @@ const factory = require('../utils/handlerFactory');
 const asyncErrCheck = require('../utils/asyncErr');
 const AppError = require('../utils/appError');
 
+const hasUserBooked = async (tour, user) => {
+  try {
+    let userBooked;
+
+    if (user) {
+      userBooked = await Booking.findOne({
+        tour,
+        user: user.id,
+      });
+
+      if (userBooked) {
+        return true;
+      }
+    }
+
+    return false;
+  } catch (err) {
+    return err;
+  }
+};
+
 exports.getCheckoutSession = asyncErrCheck(async (req, res, next) => {
   const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-
   try {
     //recupero tour corrente da parametro
     const tour = await Tour.findById(req.params.tourId);
@@ -15,39 +35,49 @@ exports.getCheckoutSession = asyncErrCheck(async (req, res, next) => {
     //Recupero data scelta
     const { year, month, day } = req.params;
 
-    //Creo sessione checkout
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      success_url: `${req.protocol}://${req.get('host')}/?tour=${
-        req.params.tourId
-      }&user=${req.user.id}&price=${
-        tour.price
-      }&bookDate=${year}-${month}-${day}`,
-      cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
-      customer_email: req.user.email,
-      client_reference_id: req.params.tourId,
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            unit_amount: tour.price * 100,
-            currency: 'eur',
-            product_data: {
-              name: `${tour.name} Tour`,
-              description: tour.summary,
-              images: [`https://www.natours.dev/img/tours/${tour.imageCover}`],
+    //Controllo se utente ha già acquistato
+    const userBooked = await hasUserBooked(tour, req.user);
+
+    if (!userBooked) {
+      //Creo sessione checkout
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        success_url: `${req.protocol}://${req.get('host')}/?tour=${
+          req.params.tourId
+        }&user=${req.user.id}&price=${
+          tour.price
+        }&bookDate=${year}-${month}-${day}`,
+        cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
+        customer_email: req.user.email,
+        client_reference_id: req.params.tourId,
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              unit_amount: tour.price * 100,
+              currency: 'eur',
+              product_data: {
+                name: `${tour.name} Tour`,
+                description: tour.summary,
+                images: [
+                  `https://www.natours.dev/img/tours/${tour.imageCover}`,
+                ],
+              },
             },
           },
-        },
-      ],
-      mode: 'payment',
-    });
+        ],
+        mode: 'payment',
+      });
 
-    //Invio response con sessione
-    res.status(200).json({
-      status: 'success',
-      session,
-    });
+      //Invio response con sessione
+      return res.status(200).json({
+        status: 'success',
+        session,
+      });
+    }
+
+    //Redirect in caso di tour già prenotato
+    res.status(401).redirect('/');
   } catch (err) {
     next(new AppError(`Stripe session error: ${err}`, 400));
   }
@@ -84,7 +114,7 @@ exports.hasUserBooked = asyncErrCheck(async (req, res, next) => {
   next();
 });
 
-exports.getBookingsByTour = asyncErrCheck(async (req, res, next) => {
+exports.getBookingsByPar = asyncErrCheck(async (req, res, next) => {
   try {
     //Recupero url per richiesta
     const urlReq = req.originalUrl;
@@ -109,7 +139,7 @@ exports.getBookingsByTour = asyncErrCheck(async (req, res, next) => {
       },
     });
   } catch (err) {
-    next(new AppError('Error', 400));
+    next(`Error: ${err}`, 400);
   }
 });
 

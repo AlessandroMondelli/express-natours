@@ -19,10 +19,14 @@ export const bookTour = async (tourId, date) => {
       `http://localhost:3000/api/v1/bookings/checkout/${tourId}/date/${year}-${month}-${day}`
     );
 
-    //Creo form checkout + pagamento
-    await stripe.redirectToCheckout({
-      sessionId: session.data.session.id,
-    });
+    if (session.data.session !== undefined) {
+      //Creo form checkout + pagamento
+      await stripe.redirectToCheckout({
+        sessionId: session.data.session.id,
+      });
+    } else {
+      window.location.href = '/';
+    }
   } catch (err) {
     showAlert('error', err);
   }

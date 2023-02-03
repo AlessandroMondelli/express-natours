@@ -51,6 +51,6 @@ router
 //Route che prende prenotazioni in base all'utente
 router
   .route('/:id/bookings')
-  .get(authController.protectRoute, bookingController.getBookingsByTour);
+  .get(authController.protectRoute, bookingController.getBookingsByPar);
 
 module.exports = router;

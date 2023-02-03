@@ -69,7 +69,7 @@ router
   .get(
     authController.protectRoute,
     authController.restrictTo('admin'),
-    bookingController.getBookingsByTour
+    bookingController.getBookingsByPar
   );
 
 module.exports = router;
