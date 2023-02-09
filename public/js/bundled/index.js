@@ -561,6 +561,8 @@ function hmrAccept(bundle, id) {
 var _mapbox = require("./mapbox");
 var _updateUser = require("./updateUser");
 var _stripe = require("./stripe");
+var _adminCrud = require("./adminCrud");
+var _review = require("./review");
 //Recupero bottone logout
 const logoutBtn = document.querySelector(".nav__el--logout");
 //Recupero form login
@@ -575,6 +577,10 @@ const updateUserForm = document.querySelector(".form-user-data");
 const updatePasswordForm = document.querySelector(".form-user-settings");
 //Prendo elemento booking
 const bookBtn = document.getElementById("book-tour");
+//Prendo tasto eliminazione admin
+const deleteBtn = document.getElementById("delete-el");
+//Controllo esistenza reviews
+const reviewSection = document.querySelector(".stars-wrap");
 if (logoutBtn) logoutBtn.addEventListener("click", (0, _login.logout));
 if (loginForm) loginForm.addEventListener("submit", (e)=>{
     e.preventDefault();
@@ -642,8 +648,61 @@ if (mapDocument) {
     const locations = JSON.parse(mapDocument.dataset.locations);
     (0, _mapbox.createMap)(locations);
 }
+//Admin
+if (deleteBtn) deleteBtn.addEventListener("click", async (e)=>{
+    e.preventDefault();
+    const tourId = deleteBtn.dataset.tourId;
+    const admin = new (0, _adminCrud.adminCrud)(tourId);
+    await admin.deleteEl();
+});
+//Review tour
+if (reviewSection) {
+    //Classe per aggiungere e rimuovere classe da elemento
+    const addRemoveClassToEl = (el, classToRemove, classToAdd)=>{
+        el.classList.remove(classToRemove);
+        el.classList.add(classToAdd);
+    };
+    //Funzione che attiva stelle precedenti a selezionata
+    const reviewStarsActive = (el, classToAdd)=>{
+        const currentStar = el.querySelector(".reviews__star");
+        addRemoveClassToEl(currentStar, "reviews__star--inactive", classToAdd);
+        if (el.dataset.review > 1) for(let i = el.dataset.review; i > 0; i--){
+            const prevEl = document.querySelector(`[data-review='${i}']`).querySelector(".reviews__star");
+            addRemoveClassToEl(prevEl, "reviews__star--inactive", classToAdd);
+        }
+    };
+    const stars = document.getElementsByClassName("star");
+    //Scorro elementi stelle
+    Array.from(stars).forEach(function(element) {
+        //Ad entrata mouse attivo
+        element.addEventListener("mouseenter", (e)=>{
+            reviewStarsActive(element, "reviews__star--active");
+        });
+        //Ad uscita disattivo
+        element.addEventListener("mouseleave", (e)=>{
+            const elToDeactivate = document.getElementsByClassName("reviews__star");
+            Array.from(elToDeactivate).forEach(function(element) {
+                if (!element.classList.contains("reviews__star--active-clicked")) addRemoveClassToEl(element, "reviews__star--active", "reviews__star--inactive");
+            });
+        });
+        //A click passo valore stella in form
+        element.addEventListener("click", function(e) {
+            reviewStarsActive(element, "reviews__star--active-clicked");
+            //Setto valore rating
+            document.getElementById("review-rating").value = e.target.closest("[data-review]").dataset.review;
+        });
+    });
+    //salvo valore in db con chiamata ad API
+    document.querySelector(".review-form").addEventListener("submit", (e)=>{
+        e.preventDefault();
+        const tourId = document.getElementById("review-submit").dataset.tourId;
+        const rating = document.getElementById("review-rating").value;
+        const review = document.getElementById("review-text").value;
+        (0, _review.postReview)(tourId, rating, review);
+    });
+}
 
-},{"./login":"7yHem","./mapbox":"3zDlz","./updateUser":"575AG","./stripe":"10tSC"}],"7yHem":[function(require,module,exports) {
+},{"./login":"7yHem","./mapbox":"3zDlz","./updateUser":"575AG","./stripe":"10tSC","./adminCrud":"cMuZP","./review":"9Gbth"}],"7yHem":[function(require,module,exports) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "login", ()=>login);
@@ -34679,6 +34738,55 @@ const bookTour = async (tourId, date)=>{
         else window.location.href = "/";
     } catch (err) {
         (0, _alerts.showAlert)("error", err);
+    }
+};
+
+},{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cMuZP":[function(require,module,exports) {
+/* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "adminCrud", ()=>adminCrud);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+class adminCrud {
+    constructor(elId){
+        this.id = elId;
+    }
+    async deleteEl() {
+        try {
+            await (0, _axiosDefault.default)({
+                method: "DELETE",
+                url: `http://localhost:3000/api/v1/tours/${this.id}`
+            });
+            (0, _alerts.showAlert)("success", "Element deleted successfully.");
+        } catch (err) {
+            (0, _alerts.showAlert)("error", `Error occurred while deleting the element`);
+        }
+    }
+}
+
+},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"6Mcnf"}],"9Gbth":[function(require,module,exports) {
+/* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "postReview", ()=>postReview);
+var _axios = require("axios");
+var _axiosDefault = parcelHelpers.interopDefault(_axios);
+var _alerts = require("./alerts");
+const postReview = async (tour, rating, review)=>{
+    try {
+        await (0, _axiosDefault.default)({
+            method: "POST",
+            url: `http://localhost:3000/api/v1/reviews`,
+            data: {
+                review,
+                rating,
+                tour
+            }
+        });
+        (0, _alerts.showAlert)("success", "Review saved successfully!");
+        window.location.href = "/";
+    } catch (err) {
+        (0, _alerts.showAlert)("error", `Error, ${err}`);
     }
 };
 

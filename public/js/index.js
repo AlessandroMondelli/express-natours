@@ -3,6 +3,8 @@ import { login, logout, signUp } from './login';
 import { createMap } from './mapbox';
 import { updateUser } from './updateUser';
 import { bookTour } from './stripe';
+import { adminCrud } from './adminCrud';
+import { postReview } from './review';
 
 //Recupero bottone logout
 const logoutBtn = document.querySelector('.nav__el--logout');
@@ -24,6 +26,12 @@ const updatePasswordForm = document.querySelector('.form-user-settings');
 
 //Prendo elemento booking
 const bookBtn = document.getElementById('book-tour');
+
+//Prendo tasto eliminazione admin
+const deleteBtn = document.getElementById('delete-el');
+
+//Controllo esistenza reviews
+const reviewSection = document.querySelector('.stars-wrap');
 
 if (logoutBtn) {
   logoutBtn.addEventListener('click', logout);
@@ -113,4 +121,88 @@ if (mapDocument) {
   //Se esiste, recupero locations da tour.pug
   const locations = JSON.parse(mapDocument.dataset.locations);
   createMap(locations);
+}
+
+//Admin
+if (deleteBtn) {
+  deleteBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+
+    const tourId = deleteBtn.dataset.tourId;
+
+    const admin = new adminCrud(tourId);
+
+    await admin.deleteEl();
+  });
+}
+
+//Review tour
+if (reviewSection) {
+  //Classe per aggiungere e rimuovere classe da elemento
+  const addRemoveClassToEl = (el, classToRemove, classToAdd) => {
+    el.classList.remove(classToRemove);
+    el.classList.add(classToAdd);
+  };
+
+  //Funzione che attiva stelle precedenti a selezionata
+  const reviewStarsActive = (el, classToAdd) => {
+    const currentStar = el.querySelector('.reviews__star');
+
+    addRemoveClassToEl(currentStar, 'reviews__star--inactive', classToAdd);
+
+    if (el.dataset.review > 1) {
+      for (let i = el.dataset.review; i > 0; i--) {
+        const prevEl = document
+          .querySelector(`[data-review='${i}']`)
+          .querySelector('.reviews__star');
+
+        addRemoveClassToEl(prevEl, 'reviews__star--inactive', classToAdd);
+      }
+    }
+  };
+
+  const stars = document.getElementsByClassName('star');
+
+  //Scorro elementi stelle
+  Array.from(stars).forEach(function (element) {
+    //Ad entrata mouse attivo
+    element.addEventListener('mouseenter', (e) => {
+      reviewStarsActive(element, 'reviews__star--active');
+    });
+
+    //Ad uscita disattivo
+    element.addEventListener('mouseleave', (e) => {
+      const elToDeactivate = document.getElementsByClassName('reviews__star');
+
+      Array.from(elToDeactivate).forEach(function (element) {
+        if (!element.classList.contains('reviews__star--active-clicked')) {
+          addRemoveClassToEl(
+            element,
+            'reviews__star--active',
+            'reviews__star--inactive'
+          );
+        }
+      });
+    });
+
+    //A click passo valore stella in form
+    element.addEventListener('click', function (e) {
+      reviewStarsActive(element, 'reviews__star--active-clicked');
+
+      //Setto valore rating
+      document.getElementById('review-rating').value =
+        e.target.closest('[data-review]').dataset.review;
+    });
+  });
+
+  //salvo valore in db con chiamata ad API
+  document.querySelector('.review-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const tourId = document.getElementById('review-submit').dataset.tourId;
+    const rating = document.getElementById('review-rating').value;
+    const review = document.getElementById('review-text').value;
+
+    postReview(tourId, rating, review);
+  });
 }

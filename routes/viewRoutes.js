@@ -34,4 +34,11 @@ router.get(
   viewController.myBookings
 );
 
+router.get(
+  '/me/manage-tours',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminManageTours
+);
+
 module.exports = router;

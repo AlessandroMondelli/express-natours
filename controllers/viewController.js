@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModel');
 const Booking = require('../models/bookingModel');
+const Review = require('../models/reviewModel');
 const asyncErrCheck = require('../utils/asyncErr');
 const AppError = require('../utils/appError');
 
@@ -20,24 +21,33 @@ exports.getTourDetails = asyncErrCheck(async (req, res, next) => {
     fields: 'review rating user',
   });
 
+  if (!tour) {
+    return next(new AppError('Tour not found.', 404));
+  }
+
   //controllo se l'utente ha già acquistato il tour
   let hasUserBooked;
+  let review;
 
   if (req.user) {
     hasUserBooked = await Booking.findOne({
       tour: tour.id,
       user: req.user.id,
     });
-  }
 
-  if (!tour) {
-    return next(new AppError('Tour not found.', 404));
+    if (hasUserBooked) {
+      review = await Review.findOne({
+        tour: tour.id,
+        user: req.user.id,
+      });
+    }
   }
 
   res.status(200).render('blocks/tour', {
     title: tour.name,
     tour,
     hasUserBooked,
+    review,
   });
 });
 
@@ -69,6 +79,17 @@ exports.myBookings = asyncErrCheck(async (req, res) => {
 
   res.status(200).render('blocks/overview', {
     title: 'My Bookings',
+    tours,
+  });
+});
+
+//admin views
+exports.adminManageTours = asyncErrCheck(async (req, res) => {
+  //Recupero tours
+  const tours = await Tour.find();
+
+  res.status(200).render('admin/manage', {
+    title: 'Manage',
     tours,
   });
 });

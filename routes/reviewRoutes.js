@@ -13,11 +13,7 @@ router.use(authController.protectRoute);
 router
   .route('/')
   .get(reviewController.getReviews)
-  .post(
-    reviewController.setTourAndUserId,
-    bookingController.hasUserBooked,
-    reviewController.createReview
-  );
+  .post(bookingController.hasUserBooked, reviewController.createReview);
 
 router
   .route('/:id')

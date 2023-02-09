@@ -105,11 +105,13 @@ exports.createBookingAfterCheckout = asyncErrCheck(async (req, res, next) => {
 
 //Metodo per controllare che l'user abbia la prenotazione
 exports.hasUserBooked = asyncErrCheck(async (req, res, next) => {
-  const book = await Booking.find({ tour: req.body.tour, user: req.body.user });
+  const book = await Booking.find({ tour: req.body.tour, user: req.user.id });
 
   if (book.length === 0) {
     return next(new AppError('You must book the tour to write a review.', 401));
   }
+
+  req.body.user = req.user.id;
 
   next();
 });

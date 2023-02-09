@@ -103,7 +103,22 @@ block content
                 button#book-tour.btn.btn--green(data-tour-id=`${tour.id}`) Book the tour
             else 
               a.btn.btn--green.span-all-rows(href='/login') Login to book this tour
-        else 
+        else if Date.now() > hasUserBooked.date.getTime() && !review
+          .cta__wrap
+            h2.heading-secondary Please, review the tour you lived
+            .stars-wrap 
+              - let n = 1
+              while n <= 5
+                li.star(data-review=`${n++}`)
+                  svg.reviews__star.reviews__star--inactive
+                    use(xlink:href='/img/icons.svg#icon-star')
+            .review-form-wrap 
+              form.review-form
+                label(for='review-text') Describe your adventure
+                textarea#review-text(name='review-text' rows='5' cols='50' placeholder='Write here your review') 
+                input#review-rating(type='hidden' name='review-rating')
+                button#review-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-tour-id=`${tour.id}`) Send review
+        else  
           .cta__wrap
             h2.heading-secondary Great, you're going to have a fantastic adventure!
             p.cta__text=`Be ready, your tour will be the ${hasUserBooked.date.toISOString().split('T')[0]}`
