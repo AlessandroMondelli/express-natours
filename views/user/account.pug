@@ -1,0 +1,27 @@
+extends ../base
+
+mixin menuEl(link, icon, active, title)
+    li(class=`${active ? 'side-nav--active' : ''}`)
+      a(href=`${link}`)
+        svg
+          use(xlink:href=`/img/icons.svg#icon-${icon}`)
+        | #{title}
+
+block content 
+  main.main
+    .user-view
+      nav.user-view__menu
+        ul.side-nav
+          +menuEl('/me', 'settings', true, 'Settings')
+          +menuEl('/me/my-bookings', 'briefcase', false, 'My bookings')
+          +menuEl('/me/my-reviews', 'star', false, 'My reviews')
+          +menuEl('#', 'credit-card', false, 'Billing')
+        - if (user.role === 'admin')
+          .admin-nav
+            h5.admin-nav__heading Admin
+            ul.side-nav
+              +menuEl('/me/manage-tours', 'map', false, 'Manage tours')
+              +menuEl('#', 'users', false, 'Manage users')
+              +menuEl('#', 'star', false, 'Manage reviews')
+              +menuEl('#', 'briefcase', false, 'Manage Bookings')
+      block dashboard

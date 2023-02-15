@@ -35,6 +35,12 @@ router.get(
 );
 
 router.get(
+  '/me/my-reviews',
+  authController.protectRoute,
+  viewController.myReviews
+);
+
+router.get(
   '/me/manage-tours',
   authController.protectRoute,
   authController.restrictTo('admin'),

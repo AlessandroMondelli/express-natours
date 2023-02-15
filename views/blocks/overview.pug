@@ -5,7 +5,16 @@ block content
     .card-container
       each tour in tours
         .card 
-          .card__header 
+          .card__header
+            -const isBookmarked = currentUserBookmarks.toursBookmark.includes(tour.id);
+            if !isBookmarked  
+              .card__bookmark
+                svg.bookmark(data-tour-id=`${tour.id}`)  
+                    use(xlink:href='/img/icons.svg#icon-bookmark')
+            else 
+              .card__bookmark.bookmarked
+                svg.bookmark(data-tour-id=`${tour.id}`)  
+                  use(xlink:href='/img/icons.svg#icon-bookmark')
             .card__picture 
               .card__picture-overlay &nbsp;
               img.card__picture-img(src=`/img/tours/${tour.imageCover}` alt=`Cover image of ${tour.name}`)

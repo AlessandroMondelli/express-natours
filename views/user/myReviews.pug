@@ -1,0 +1,31 @@
+extends account 
+
+block dashboard 
+  .my-reviews
+    .card-container
+      each review in reviews 
+        .card 
+          .card__header 
+            .card__picture 
+              .card__picture-overlay &nbsp;
+              img.card__picture-img(src=`/img/tours/${review.tour.imageCover}` alt=`Cover image of ${review.tour.name}`)
+            h3.heading-tertirary 
+              span= review.tour.name 
+
+          .card__review 
+            .stars-wrap 
+              - let n = 1
+              while n <= 5
+                li.star(data-review=`${n++}`)
+                  if review.rating >= n - 1
+                    svg.reviews__star.reviews__star--active.reviews__star--active-clicked
+                      use(xlink:href='/img/icons.svg#icon-star')
+                  else 
+                    svg.reviews__star.reviews__star--inactive
+                      use(xlink:href='/img/icons.svg#icon-star')
+            .review-form-wrap 
+              form.review-form.patch-review
+                label(for='review-text') Describe your adventure
+                textarea#review-text(name='review-text' rows='5' cols='20' placeholder='Write here your review')= review.review 
+                input#review-rating(type='hidden' name='review-rating')
+                button#review-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-review-id=`${review.id}`) Edit review

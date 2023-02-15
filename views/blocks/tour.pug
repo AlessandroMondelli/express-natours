@@ -118,6 +118,9 @@ block content
                 textarea#review-text(name='review-text' rows='5' cols='50' placeholder='Write here your review') 
                 input#review-rating(type='hidden' name='review-rating')
                 button#review-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-tour-id=`${tour.id}`) Send review
+        else if review 
+          .cta__wrap
+            h2.heading-secondary Thanks for your review, see you soon!
         else  
           .cta__wrap
             h2.heading-secondary Great, you're going to have a fantastic adventure!

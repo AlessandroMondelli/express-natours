@@ -4,7 +4,8 @@ import { createMap } from './mapbox';
 import { updateUser } from './updateUser';
 import { bookTour } from './stripe';
 import { adminCrud } from './adminCrud';
-import { postReview } from './review';
+import { postReview, patchReview } from './review';
+import { addBookmarkToUser } from './bookmark';
 
 //Recupero bottone logout
 const logoutBtn = document.querySelector('.nav__el--logout');
@@ -32,6 +33,9 @@ const deleteBtn = document.getElementById('delete-el');
 
 //Controllo esistenza reviews
 const reviewSection = document.querySelector('.stars-wrap');
+
+//Controllo esistenza bookmark
+const bookmarkBtn = document.querySelector('.bookmark');
 
 if (logoutBtn) {
   logoutBtn.addEventListener('click', logout);
@@ -199,10 +203,28 @@ if (reviewSection) {
   document.querySelector('.review-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const tourId = document.getElementById('review-submit').dataset.tourId;
+    //Recupero dati review
     const rating = document.getElementById('review-rating').value;
     const review = document.getElementById('review-text').value;
 
-    postReview(tourId, rating, review);
+    //Se si tratta di una PATCH request
+    if (e.target.classList.contains('patch-review')) {
+      const reviewId =
+        document.getElementById('review-submit').dataset.reviewId;
+
+      patchReview(reviewId, rating, review);
+    } else {
+      const tourId = document.getElementById('review-submit').dataset.tourId;
+
+      postReview(tourId, rating, review);
+    }
+  });
+}
+
+if (bookmarkBtn) {
+  bookmarkBtn.addEventListener('click', (e) => {
+    const tourId = e.target.dataset.tourId;
+
+    addBookmarkToUser(tourId);
   });
 }

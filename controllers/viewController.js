@@ -1,4 +1,5 @@
 const Tour = require('../models/tourModel');
+const User = require('../models/userModel');
 const Booking = require('../models/bookingModel');
 const Review = require('../models/reviewModel');
 const asyncErrCheck = require('../utils/asyncErr');
@@ -7,10 +8,14 @@ const AppError = require('../utils/appError');
 exports.getOverview = asyncErrCheck(async (req, res) => {
   //Recupero dati di tutti i tours
   const tours = await Tour.find();
+  const currentUserBookmarks = await User.findById(req.user.id).select(
+    'toursBookmark'
+  );
 
   res.status(200).render('blocks/overview', {
     title: 'Tours',
     tours,
+    currentUserBookmarks,
   });
 });
 
@@ -52,19 +57,19 @@ exports.getTourDetails = asyncErrCheck(async (req, res, next) => {
 });
 
 exports.login = (req, res) => {
-  res.status(200).render('blocks/login', {
+  res.status(200).render('auth/login', {
     title: 'Login',
   });
 };
 
 exports.signUp = (req, res) => {
-  res.status(200).render('blocks/signUp', {
+  res.status(200).render('auth/signUp', {
     title: 'Sign Up',
   });
 };
 
 exports.account = (req, res) => {
-  res.status(200).render('blocks/account', {
+  res.status(200).render('user/userInfo', {
     title: 'Your Account',
   });
 };
@@ -77,9 +82,19 @@ exports.myBookings = asyncErrCheck(async (req, res) => {
   const toursIDs = bookings.map((el) => el.tour);
   const tours = await Tour.find({ _id: { $in: toursIDs } });
 
-  res.status(200).render('blocks/overview', {
+  res.status(200).render('user/myBookings', {
     title: 'My Bookings',
     tours,
+  });
+});
+
+exports.myReviews = asyncErrCheck(async (req, res) => {
+  //Recupero reviews utente
+  const reviews = await Review.find({ user: req.user.id }).populate('tour');
+
+  res.status(200).render('user/myReviews', {
+    title: 'My reviews',
+    reviews,
   });
 });
 

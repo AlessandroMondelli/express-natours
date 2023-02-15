@@ -117,3 +117,19 @@ exports.deleteCurrentUser = asyncErrCheck(async (req, res, next) => {
     data: null,
   });
 });
+
+//Metodo per aggiungere bookmark
+exports.addBookmark = asyncErrCheck(async (req, res, next) => {
+  const userId = req.user.id;
+  const tourId = req.body.tourId;
+
+  //Aggiungo ad array preferiti il tour scelto
+  await User.findByIdAndUpdate(userId, {
+    $push: { toursBookmark: tourId },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Tour added bookmarks.',
+  });
+});

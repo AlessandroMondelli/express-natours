@@ -18,6 +18,9 @@ router.patch('/reset-password/:token', authController.resetPassword);
 //Aggiungo middleware a router per proteggere ogni altra chiamata
 router.use(authController.protectRoute);
 
+//Route che aggiunge tour preferito a User
+router.route('/add-bookmark').patch(usersController.addBookmark);
+
 router.patch('/update-password', authController.updatePassword);
 
 //Me Route
@@ -49,8 +52,6 @@ router
   .delete(usersController.deleteUser);
 
 //Route che prende prenotazioni in base all'utente
-router
-  .route('/:id/bookings')
-  .get(authController.protectRoute, bookingController.getBookingsByPar);
+router.route('/:id/bookings').get(bookingController.getBookingsByPar);
 
 module.exports = router;

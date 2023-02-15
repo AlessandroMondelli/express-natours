@@ -55,7 +55,15 @@ const userSchema = mongoose.Schema({
     default: true,
     select: false,
   },
+  toursBookmark: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Tour',
+    },
+  ],
 });
+
+userSchema.index({ toursBookmark: 1 }, { unique: true });
 
 //Encryption delle password prima del salvataggio
 userSchema.pre('save', async function (next) {
