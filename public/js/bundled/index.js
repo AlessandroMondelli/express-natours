@@ -578,6 +578,8 @@ const updateUserForm = document.querySelector(".form-user-data");
 const updatePasswordForm = document.querySelector(".form-user-settings");
 //Prendo elemento booking
 const bookBtn = document.getElementById("book-tour");
+//Prendo form modifica tour
+const editTour = document.getElementById("edit-tour");
 //Prendo tasto eliminazione admin
 const deleteBtn = document.getElementById("delete-el");
 //Controllo esistenza reviews
@@ -652,6 +654,14 @@ if (mapDocument) {
     (0, _mapbox.createMap)(locations);
 }
 //Admin
+if (editTour) editTour.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const tourId = document.getElementById("edit-submit").dataset.tourId;
+    //Istanzio FormData per recuperare dati da form
+    const formData = new FormData(editTour);
+    const admin = new (0, _adminCrud.adminCrud)(tourId);
+    await admin.editTour(formData);
+});
 if (deleteBtn) deleteBtn.addEventListener("click", async (e)=>{
     e.preventDefault();
     const tourId = deleteBtn.dataset.tourId;
@@ -713,7 +723,8 @@ if (reviewSection) {
 }
 if (bookmarkBtn) bookmarkBtn.addEventListener("click", (e)=>{
     const tourId = e.target.dataset.tourId;
-    (0, _bookmark.addBookmarkToUser)(tourId);
+    const booked = e.target.classList.contains("bookmarked") ? true : false;
+    (0, _bookmark.addBookmarkToUser)(tourId, booked, e);
 });
 
 },{"./login":"7yHem","./mapbox":"3zDlz","./updateUser":"575AG","./stripe":"10tSC","./adminCrud":"cMuZP","./review":"9Gbth","./bookmark":"lMKIq"}],"7yHem":[function(require,module,exports) {
@@ -34784,6 +34795,18 @@ class adminCrud {
     constructor(elId){
         this.id = elId;
     }
+    async editTour(data) {
+        try {
+            await (0, _axiosDefault.default)({
+                method: "PATCH",
+                url: `http://localhost:3000/api/v1/tours/${this.id}`,
+                data
+            });
+            (0, _alerts.showAlert)("success", "Element edited successfully.");
+        } catch (err) {
+            (0, _alerts.showAlert)("error", `Error occurred while editing this element`);
+        }
+    }
     async deleteEl() {
         try {
             await (0, _axiosDefault.default)({
@@ -34792,7 +34815,7 @@ class adminCrud {
             });
             (0, _alerts.showAlert)("success", "Element deleted successfully.");
         } catch (err) {
-            (0, _alerts.showAlert)("error", `Error occurred while deleting the element`);
+            (0, _alerts.showAlert)("error", `Error occurred while deleting this element`);
         }
     }
 }
@@ -34845,16 +34868,26 @@ parcelHelpers.export(exports, "addBookmarkToUser", ()=>addBookmarkToUser);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-const addBookmarkToUser = async (tourId)=>{
+const addBookmarkToUser = async (tourId, booked, el)=>{
     try {
+        //Invio chiamata PATCH a route
         await (0, _axiosDefault.default)({
             method: "PATCH",
-            url: `http://localhost:3000/api/v1/users/add-bookmark`,
+            url: `http://localhost:3000/api/v1/users/toggle-bookmark`,
             data: {
                 tourId
             }
         });
-        (0, _alerts.showAlert)("success", "Tour added to bookmarks.");
+        //Se il tour era già salvato
+        if (booked) {
+            (0, _alerts.showAlert)("success", "Tour removed from bookmarks.");
+            //Elimino classe
+            el.target.classList.remove("bookmarked");
+        } else {
+            (0, _alerts.showAlert)("success", "Tour added to bookmarks.");
+            //Aggiungo classe
+            el.target.classList.add("bookmarked");
+        }
     } catch (err) {
         (0, _alerts.showAlert)("error", `Error, ${err}`);
     }

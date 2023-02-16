@@ -38,7 +38,7 @@ exports.uploadTourImages = upload.fields([
 //Middleware ottimizzazione immagine
 exports.resizeTourImages = asyncErrCheck(async (req, res, next) => {
   //Se non ci sono immagini passo al prossimo middleware
-  if (!req.files.imageCover || !req.files.images) return next();
+  if (!req.files.imageCover) return next();
 
   //Cover image
   //Aggiungo nome file a body
@@ -51,6 +51,7 @@ exports.resizeTourImages = asyncErrCheck(async (req, res, next) => {
     .jpeg({ quality: 90 })
     .toFile(`public/img/tours/${req.body.imageCover}`);
 
+  if (!req.files.images) return next();
   //Images
   //preparo array dove caricare nomi immagini
   req.body.images = [];

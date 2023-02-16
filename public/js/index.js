@@ -28,6 +28,9 @@ const updatePasswordForm = document.querySelector('.form-user-settings');
 //Prendo elemento booking
 const bookBtn = document.getElementById('book-tour');
 
+//Prendo form modifica tour
+const editTour = document.getElementById('edit-tour');
+
 //Prendo tasto eliminazione admin
 const deleteBtn = document.getElementById('delete-el');
 
@@ -128,6 +131,19 @@ if (mapDocument) {
 }
 
 //Admin
+if (editTour) {
+  editTour.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const tourId = document.getElementById('edit-submit').dataset.tourId;
+
+    //Istanzio FormData per recuperare dati da form
+    const formData = new FormData(editTour);
+
+    const admin = new adminCrud(tourId);
+    await admin.editTour(formData);
+  });
+}
+
 if (deleteBtn) {
   deleteBtn.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -224,7 +240,8 @@ if (reviewSection) {
 if (bookmarkBtn) {
   bookmarkBtn.addEventListener('click', (e) => {
     const tourId = e.target.dataset.tourId;
+    const booked = e.target.classList.contains('bookmarked') ? true : false;
 
-    addBookmarkToUser(tourId);
+    addBookmarkToUser(tourId, booked, e);
   });
 }

@@ -41,10 +41,23 @@ router.get(
 );
 
 router.get(
+  '/me/my-bookmarks',
+  authController.protectRoute,
+  viewController.myBookmarks
+);
+
+router.get(
   '/me/manage-tours',
   authController.protectRoute,
   authController.restrictTo('admin'),
   viewController.adminManageTours
+);
+
+router.get(
+  '/me/manage-tours/edit/:tourId',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminEditTour
 );
 
 module.exports = router;

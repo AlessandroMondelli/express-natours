@@ -19,7 +19,7 @@ router.patch('/reset-password/:token', authController.resetPassword);
 router.use(authController.protectRoute);
 
 //Route che aggiunge tour preferito a User
-router.route('/add-bookmark').patch(usersController.addBookmark);
+router.route('/toggle-bookmark').patch(usersController.toggleBookmark);
 
 router.patch('/update-password', authController.updatePassword);
 

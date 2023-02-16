@@ -1,0 +1,34 @@
+extends ../user/account 
+
+block dashboard 
+  .admin-edit-tour 
+    form#edit-tour.form.edit-tour-form.admin-form
+      .form__group
+        label.form__label(for='name') Name 
+        input#name.form__input(type='string', name='name', value=`${tour.name}`)
+      .form__group
+        label.form__label(for='duration') Duration 
+        input#duration.form__input(type='number', name='duration', value=`${tour.duration}`)
+      .form__group
+        label.form__label(for='maxGroupSize') Max group size 
+        input#maxGroupSize.form__input(type='number', name='maxGroupSize', value=`${tour.maxGroupSize}`)
+      .form__group
+        label.form__label(for='difficulty') Difficulty
+        select#difficulty(name='difficulty')
+          each difficulty in ['easy', 'medium', 'difficult']
+            option(value=`${difficulty}`)=difficulty
+      .form__group
+        label.form__label(for='price') Price
+        input#price.form__input(type='number', name='price', value=`${tour.price}`)
+      .form__group
+        label.form__label(for='summary') Summary
+        textarea#summary(name='summary', rows='5', cols='40')= tour.summary
+      .form__group
+        label.form__label(for='description') Description
+        textarea#description(name='description', rows='5', cols='40')= tour.description
+      .form__group.form__photo-upload
+        img.form__user-photo(src=`/img/tours/${tour.imageCover}`, alt='tour cover')
+        input.form__upload(type='file', accept='image/*', id='imageCover', name='imageCover')
+        label(for='imageCover') Choose new cover image
+      .form__group 
+        button#edit-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-tour-id=`${tour.id}`) Edit tour

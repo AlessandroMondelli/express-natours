@@ -1150,11 +1150,7 @@ label {
   left: 2%;
   z-index: 9;
 }
-.card__bookmark.bookmarked {
-  pointer-events: none;
-  cursor: auto;
-}
-.card__bookmark.bookmarked .bookmark {
+.card__bookmark .bookmark.bookmarked {
   fill: rgba(198, 255, 190, 0.85);
 }
 .card__bookmark .bookmark {
@@ -1394,4 +1390,8 @@ label {
   box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15);
   -webkit-transform: translateY(-2px);
   transform: translateY(-2px);
+}
+
+.admin-form {
+  margin: 50px 0 50px 50px;
 }

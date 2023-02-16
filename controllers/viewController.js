@@ -8,9 +8,13 @@ const AppError = require('../utils/appError');
 exports.getOverview = asyncErrCheck(async (req, res) => {
   //Recupero dati di tutti i tours
   const tours = await Tour.find();
-  const currentUserBookmarks = await User.findById(req.user.id).select(
-    'toursBookmark'
-  );
+  let currentUserBookmarks;
+
+  if (req.user) {
+    currentUserBookmarks = await User.findById(req.user.id).select(
+      'toursBookmark'
+    );
+  }
 
   res.status(200).render('blocks/overview', {
     title: 'Tours',
@@ -98,6 +102,20 @@ exports.myReviews = asyncErrCheck(async (req, res) => {
   });
 });
 
+exports.myBookmarks = asyncErrCheck(async (req, res) => {
+  //Cerco bookmarks per utente
+  const findBookmarks = await User.findById(req.user.id)
+    .populate('toursBookmark')
+    .select('toursBookmark');
+
+  const bookmarks = findBookmarks.toursBookmark;
+
+  res.status(200).render('user/myBookmarks', {
+    title: 'My Bookmarks',
+    bookmarks,
+  });
+});
+
 //admin views
 exports.adminManageTours = asyncErrCheck(async (req, res) => {
   //Recupero tours
@@ -106,5 +124,14 @@ exports.adminManageTours = asyncErrCheck(async (req, res) => {
   res.status(200).render('admin/manage', {
     title: 'Manage',
     tours,
+  });
+});
+
+exports.adminEditTour = asyncErrCheck(async (req, res) => {
+  const tour = await Tour.findById(req.params.tourId);
+
+  res.status(200).render('admin/editTour', {
+    title: 'Edit tour',
+    tour,
   });
 });

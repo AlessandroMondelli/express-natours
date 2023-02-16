@@ -7,6 +7,20 @@ export class adminCrud {
     this.id = elId;
   }
 
+  async editTour(data) {
+    try {
+      await axios({
+        method: 'PATCH',
+        url: `http://localhost:3000/api/v1/tours/${this.id}`,
+        data,
+      });
+
+      showAlert('success', 'Element edited successfully.');
+    } catch (err) {
+      showAlert('error', `Error occurred while editing this element`);
+    }
+  }
+
   async deleteEl() {
     try {
       await axios({
@@ -16,7 +30,7 @@ export class adminCrud {
 
       showAlert('success', 'Element deleted successfully.');
     } catch (err) {
-      showAlert('error', `Error occurred while deleting the element`);
+      showAlert('error', `Error occurred while deleting this element`);
     }
   }
 }

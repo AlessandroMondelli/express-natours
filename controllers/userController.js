@@ -4,6 +4,7 @@ const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const asyncErrCheck = require('../utils/asyncErr');
 const handlerFactory = require('../utils/handlerFactory');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 //Setto local storage per multer
 const multerStorage = multer.memoryStorage();
@@ -119,9 +120,22 @@ exports.deleteCurrentUser = asyncErrCheck(async (req, res, next) => {
 });
 
 //Metodo per aggiungere bookmark
-exports.addBookmark = asyncErrCheck(async (req, res, next) => {
+exports.toggleBookmark = asyncErrCheck(async (req, res, next) => {
   const userId = req.user.id;
   const tourId = req.body.tourId;
+
+  const user = await User.findById(userId);
+
+  if (user.toursBookmark.includes(tourId)) {
+    await User.findByIdAndUpdate(userId, {
+      $pull: { toursBookmark: ObjectId(tourId) },
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Tour removed from bookmarks.',
+    });
+  }
 
   //Aggiungo ad array preferiti il tour scelto
   await User.findByIdAndUpdate(userId, {
@@ -130,6 +144,6 @@ exports.addBookmark = asyncErrCheck(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    message: 'Tour added bookmarks.',
+    message: 'Tour added to bookmarks.',
   });
 });
