@@ -581,7 +581,7 @@ const bookBtn = document.getElementById("book-tour");
 //Prendo form modifica tour
 const editTour = document.getElementById("edit-tour");
 //Prendo tasto eliminazione admin
-const deleteBtn = document.getElementById("delete-el");
+const deleteBtn = document.getElementsByClassName("delete-el");
 //Controllo esistenza reviews
 const reviewSection = document.querySelector(".stars-wrap");
 //Controllo esistenza bookmark
@@ -659,14 +659,31 @@ if (editTour) editTour.addEventListener("submit", async (e)=>{
     const tourId = document.getElementById("edit-submit").dataset.tourId;
     //Istanzio FormData per recuperare dati da form
     const formData = new FormData(editTour);
+    //Preparo start location
+    const startLocation = {
+        type: "Point",
+        address: formData.get("address"),
+        description: formData.get("locationDescription")
+    };
+    formData.append(`startLocation.coordinates.0`, formData.get("longitude"));
+    formData.append(`startLocation.coordinates.1`, formData.get("latitude"));
+    Object.keys(startLocation).forEach((e)=>{
+        formData.append(`startLocation.${e}`, startLocation[e]);
+    });
+    //Preparo guide
+    const guides = formData.getAll("guide");
+    for (let guide of guides)formData.append("guides[]", guide);
     const admin = new (0, _adminCrud.adminCrud)(tourId);
-    await admin.editTour(formData);
+    await admin.editTour("tours", formData);
 });
-if (deleteBtn) deleteBtn.addEventListener("click", async (e)=>{
+if (deleteBtn) //Aggiungo listener a tutti gli elementi
+for(let i = 0; i < deleteBtn.length; i++)deleteBtn[i].addEventListener("click", async (e)=>{
     e.preventDefault();
-    const tourId = deleteBtn.dataset.tourId;
-    const admin = new (0, _adminCrud.adminCrud)(tourId);
-    await admin.deleteEl();
+    const elId = deleteBtn[i].dataset.elId;
+    const path = deleteBtn[i].dataset.elPath;
+    const admin = new (0, _adminCrud.adminCrud)(elId);
+    await admin.deleteEl(path);
+    deleteBtn[i].closest(".card").remove();
 });
 //Review tour
 if (reviewSection) {
@@ -34795,11 +34812,11 @@ class adminCrud {
     constructor(elId){
         this.id = elId;
     }
-    async editTour(data) {
+    async editTour(context, data) {
         try {
             await (0, _axiosDefault.default)({
                 method: "PATCH",
-                url: `http://localhost:3000/api/v1/tours/${this.id}`,
+                url: `http://localhost:3000/api/v1/${context}/${this.id}`,
                 data
             });
             (0, _alerts.showAlert)("success", "Element edited successfully.");
@@ -34807,11 +34824,11 @@ class adminCrud {
             (0, _alerts.showAlert)("error", `Error occurred while editing this element`);
         }
     }
-    async deleteEl() {
+    async deleteEl(context) {
         try {
             await (0, _axiosDefault.default)({
                 method: "DELETE",
-                url: `http://localhost:3000/api/v1/tours/${this.id}`
+                url: `http://localhost:3000/api/v1/${context}/${this.id}`
             });
             (0, _alerts.showAlert)("success", "Element deleted successfully.");
         } catch (err) {

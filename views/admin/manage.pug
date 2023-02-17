@@ -3,43 +3,23 @@ extends ../user/account
 block dashboard 
   .admin-dashboard
     .card-container
-      each tour in tours
+      each el in data
         .card 
           .card__header 
             .card__picture 
               .card__picture-overlay &nbsp;
-              img.card__picture-img(src=`/img/tours/${tour.imageCover}` alt=`Cover image of ${tour.name}`)
+              if path === 'tours'
+                img.card__picture-img(src=`/img/${path}/${el.imageCover}` alt=`${path} cover image`)
+              else
+                img.card__picture-img(src=`/img/${path}/${el.photo}` alt=`${path} photo`)
             h3.heading-tertirary 
-              span= tour.name 
-
-          .card__details 
-            h4.card__sub-heading #{tour.difficulty} #{tour.duration}-day tour
-            p.card__text= tour.summary 
-            .card__data 
-              svg.card__icon
-                use(xlink:href='/img/icons.svg#icon-map-pin')
-              span= tour.startLocation.description 
-            .card__data
-              svg.card__icon
-                use(xlink:href='/img/icons.svg#icon-calendar')
-              span= tour.startDates[0].date.toISOString().split('T')[0]
-            .card__data
-              svg.card__icon
-                use(xlink:href='/img/icons.svg#icon-flag')
-              span #{tour.locations.length}
-            .card__data
-              svg.card__icon
-                use(xlink:href='/img/icons.svg#icon-user')
-              span #{tour.maxGroupSize} people
-
+              if path === 'tours'
+                span= el.name 
+              else 
+                span= el.username
           .card__footer 
-            p
-              span.card__footer-value #{tour.price} €
-              span.card__footer-text  per person 
-            p.card-ratings 
-              span.card__footer-value= tour.ratingsAverage 
-              span.card__footer-text  rating(#{tour.ratingsQuantity})
             .btns-wrap
-              a.btn.btn--green.btn--small(href=`/tour/${tour.slug}`) Details
-              a.btn.btn--green.btn--small(href=`/me/manage-tours/edit/${tour.id}`) Edit
-              a#delete-el.btn.btn--green.btn--small(data-tour-id=`${tour.id}`) Delete
+              if el.slug
+                a.btn.btn--green.btn--small(href=`/${path}/${el.slug}`) Details
+              a.btn.btn--green.btn--small(href=`/me/manage-${path}/edit/${el.id}`) Edit
+              a.delete-el.btn.btn--green.btn--small(data-el-id=`${el.id}` data-el-path=`${path}`) Delete

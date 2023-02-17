@@ -117,21 +117,36 @@ exports.myBookmarks = asyncErrCheck(async (req, res) => {
 });
 
 //admin views
-exports.adminManageTours = asyncErrCheck(async (req, res) => {
-  //Recupero tours
-  const tours = await Tour.find();
+exports.adminManage = asyncErrCheck(async (req, res) => {
+  let data;
+  let path;
+
+  if (req.originalUrl.includes('tours')) {
+    //Recupero tours
+    data = await Tour.find();
+    path = 'tours';
+  } else if (req.originalUrl.includes('users')) {
+    //Recupero users
+    data = await User.find();
+    path = 'users';
+  }
 
   res.status(200).render('admin/manage', {
     title: 'Manage',
-    tours,
+    path,
+    data,
   });
 });
 
 exports.adminEditTour = asyncErrCheck(async (req, res) => {
   const tour = await Tour.findById(req.params.tourId);
+  const guides = await User.find({
+    $or: [{ role: 'guide' }, { role: 'lead-guide' }],
+  });
 
   res.status(200).render('admin/editTour', {
     title: 'Edit tour',
     tour,
+    guides,
   });
 });

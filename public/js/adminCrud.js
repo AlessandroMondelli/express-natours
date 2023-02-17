@@ -7,11 +7,11 @@ export class adminCrud {
     this.id = elId;
   }
 
-  async editTour(data) {
+  async editTour(context, data) {
     try {
       await axios({
         method: 'PATCH',
-        url: `http://localhost:3000/api/v1/tours/${this.id}`,
+        url: `http://localhost:3000/api/v1/${context}/${this.id}`,
         data,
       });
 
@@ -21,11 +21,11 @@ export class adminCrud {
     }
   }
 
-  async deleteEl() {
+  async deleteEl(context) {
     try {
       await axios({
         method: 'DELETE',
-        url: `http://localhost:3000/api/v1/tours/${this.id}`,
+        url: `http://localhost:3000/api/v1/${context}/${this.id}`,
       });
 
       showAlert('success', 'Element deleted successfully.');

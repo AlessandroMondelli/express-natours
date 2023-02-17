@@ -50,7 +50,14 @@ router.get(
   '/me/manage-tours',
   authController.protectRoute,
   authController.restrictTo('admin'),
-  viewController.adminManageTours
+  viewController.adminManage
+);
+
+router.get(
+  '/me/manage-users',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminManage
 );
 
 router.get(

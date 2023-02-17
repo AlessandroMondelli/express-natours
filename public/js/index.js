@@ -32,7 +32,7 @@ const bookBtn = document.getElementById('book-tour');
 const editTour = document.getElementById('edit-tour');
 
 //Prendo tasto eliminazione admin
-const deleteBtn = document.getElementById('delete-el');
+const deleteBtn = document.getElementsByClassName('delete-el');
 
 //Controllo esistenza reviews
 const reviewSection = document.querySelector('.stars-wrap');
@@ -139,21 +139,47 @@ if (editTour) {
     //Istanzio FormData per recuperare dati da form
     const formData = new FormData(editTour);
 
+    //Preparo start location
+    const startLocation = {
+      type: 'Point',
+      address: formData.get('address'),
+      description: formData.get('locationDescription'),
+    };
+
+    formData.append(`startLocation.coordinates.0`, formData.get('longitude'));
+    formData.append(`startLocation.coordinates.1`, formData.get('latitude'));
+
+    Object.keys(startLocation).forEach((e) => {
+      formData.append(`startLocation.${e}`, startLocation[e]);
+    });
+
+    //Preparo guide
+    const guides = formData.getAll('guide');
+
+    for (let guide of guides) {
+      formData.append('guides[]', guide);
+    }
+
     const admin = new adminCrud(tourId);
-    await admin.editTour(formData);
+    await admin.editTour('tours', formData);
   });
 }
 
 if (deleteBtn) {
-  deleteBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
+  //Aggiungo listener a tutti gli elementi
+  for (let i = 0; i < deleteBtn.length; i++) {
+    deleteBtn[i].addEventListener('click', async (e) => {
+      e.preventDefault();
 
-    const tourId = deleteBtn.dataset.tourId;
+      const elId = deleteBtn[i].dataset.elId;
+      const path = deleteBtn[i].dataset.elPath;
 
-    const admin = new adminCrud(tourId);
+      const admin = new adminCrud(elId);
 
-    await admin.deleteEl();
-  });
+      await admin.deleteEl(path);
+      deleteBtn[i].closest('.card').remove();
+    });
+  }
 }
 
 //Review tour

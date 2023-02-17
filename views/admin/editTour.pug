@@ -6,6 +6,31 @@ block dashboard
       .form__group
         label.form__label(for='name') Name 
         input#name.form__input(type='string', name='name', value=`${tour.name}`)
+      hr
+      .form__group
+        h2 Start location
+        .form__group
+        label.form__label(for='longitude') Longitude 
+        input#longitude.form__input(type='number', name='longitude', step='0.1', value=`${tour.startLocation.coordinates[0]}`)
+        .form__group
+        label.form__label(for='latitude') Latitude 
+        input#latitude.form__input(type='number', name='latitude', step='0.1', value=`${tour.startLocation.coordinates[1]}`)
+        .form__group
+        label.form__label(for='address') Address 
+        input#address.form__input(type='string', name='address', value=`${tour.startLocation.address}`)
+        .form__group
+        label.form__label(for='locationDescription') Description 
+        input#description.form__input(type='string', name='locationDescription', value=`${tour.startLocation.description}`)
+      hr
+      .form__group
+        h2 Guides
+        - const guidesId = tour.guides.map(el => el.id);
+        each guide in guides
+          label.form__label(for=`guide-${guide.id}`)=guide.username
+          if guidesId.includes(guide.id)
+            input.guide.form__input(type='checkbox', name=`guide`, value=`${guide.id}`, checked)
+          else
+            input.guide.form__input(type='checkbox', name=`guide`, value=`${guide.id}`)
       .form__group
         label.form__label(for='duration') Duration 
         input#duration.form__input(type='number', name='duration', value=`${tour.duration}`)
@@ -15,8 +40,10 @@ block dashboard
       .form__group
         label.form__label(for='difficulty') Difficulty
         select#difficulty(name='difficulty')
+          option(value=`${tour.difficulty}`)=tour.difficulty
           each difficulty in ['easy', 'medium', 'difficult']
-            option(value=`${difficulty}`)=difficulty
+            if difficulty !== tour.difficulty
+              option(value=`${difficulty}`)=difficulty
       .form__group
         label.form__label(for='price') Price
         input#price.form__input(type='number', name='price', value=`${tour.price}`)
@@ -30,5 +57,10 @@ block dashboard
         img.form__user-photo(src=`/img/tours/${tour.imageCover}`, alt='tour cover')
         input.form__upload(type='file', accept='image/*', id='imageCover', name='imageCover')
         label(for='imageCover') Choose new cover image
+      .form__group.form__photo-upload
+        each img in tour.images
+          img.form__user-photo(src=`/img/tours/${img}`, alt='tour image')
+        input.form__upload(type='file', accept='image/*', id='images', name='images', multiple)
+        label(for='images') Change images
       .form__group 
         button#edit-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-tour-id=`${tour.id}`) Edit tour
