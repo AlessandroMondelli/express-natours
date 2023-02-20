@@ -45,10 +45,15 @@ router
   .route('/')
   .get(usersController.getUsers)
   .post(usersController.createUser);
+
 router
   .route('/:id')
   .get(usersController.getUser)
-  .patch(usersController.patchUser)
+  .patch(
+    usersController.uploadUserPhoto,
+    usersController.resizeUserPhoto,
+    usersController.patchUser
+  )
   .delete(usersController.deleteUser);
 
 //Route che prende prenotazioni in base all'utente

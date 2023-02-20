@@ -1,0 +1,24 @@
+extends ../user/account 
+
+block dashboard 
+  .admin-edit-user 
+    form#edit-user.form.edit-tour-form.admin-form
+      .form__group
+        label.form__label(for='username') Username 
+        input#username.form__input(type='text', name='username', value=`${user.username}`)
+      .form__group 
+        label.form__label(for='email') Email 
+        input#email.form__input(type='email', name='email', value=`${user.email}`)
+      .form__group 
+        label.form__label(for='role') Role 
+        select#role.form__input(name='role')
+          option(value=`${user.role}`)= user.role 
+          each opt in ['user', 'guide', 'lead-guide', 'admin']
+            if opt !== user.role
+              option(value=`${opt}`)=opt
+      .form__group.form__photo-upload
+        img.form__user-photo(src=`/img/users/${user.photo}`, alt='user photo')
+        input.form__upload(type='file', accept='image/*', id='photo', name='photo')
+        label(for='photo') Choose a new profile pic
+      .form__group 
+        button#edit-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-user-id=`${user.id}`) Edit user

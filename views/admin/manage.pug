@@ -10,16 +10,37 @@ block dashboard
               .card__picture-overlay &nbsp;
               if path === 'tours'
                 img.card__picture-img(src=`/img/${path}/${el.imageCover}` alt=`${path} cover image`)
-              else
+              else if path === 'users'
                 img.card__picture-img(src=`/img/${path}/${el.photo}` alt=`${path} photo`)
+              else if path === 'reviews'
+                img.card__picture-img(src=`/img/tours/${el.tour.imageCover}` alt=`review tour photo`)  
             h3.heading-tertirary 
               if path === 'tours'
                 span= el.name 
-              else 
+              else if path === 'users'
                 span= el.username
+              else if path === 'reviews' || path === 'bookings'
+                span= el.tour.name
+          .card__content
+            if path === 'reviews'
+              .review-data 
+                h2.review-user= `User: ${el.user.username}`
+                p.review-rating= `Rating: ${el.rating}`
+                p.review-text= `Review: ${el.review}`
+            else if path === 'bookings'
+              .booking-data 
+                h2.booking-user= `User: ${el.user.username}`
+                p.booking-date= `Date: ${new Date(el.date).toISOString().split('T')[0]}`
           .card__footer 
             .btns-wrap
-              if el.slug
-                a.btn.btn--green.btn--small(href=`/${path}/${el.slug}`) Details
-              a.btn.btn--green.btn--small(href=`/me/manage-${path}/edit/${el.id}`) Edit
+              -const urlTourPatch = 'tour'
+              if path === 'tours'
+                a.btn.btn--green.btn--small(href=`/${urlPatch}/${el.slug}`) Details
+              if path === 'tours' || path === 'users'
+                a.btn.btn--green.btn--small(href=`/me/manage-${path}/edit/${el.id}`) Edit
               a.delete-el.btn.btn--green.btn--small(data-el-id=`${el.id}` data-el-path=`${path}`) Delete
+  if path === 'tours' || path === 'users'
+    .create-btn
+      a(href=`/me/manage-${path}/create/`)
+        svg.icon-plus
+          use(xlink:href='/img/icons.svg#icon-plus')

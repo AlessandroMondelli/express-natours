@@ -1209,6 +1209,11 @@ label {
   margin-top: -1rem;
   margin-bottom: 0.75rem;
 }
+.card__content {
+  font-size: 12px;
+  background-color: #f7f7f7;
+  padding: 2.5rem 3rem;
+}
 .card__data {
   font-size: 1.3rem;
   display: -webkit-box;
@@ -1394,4 +1399,24 @@ label {
 
 .admin-form {
   margin: 50px 0 50px 50px;
+}
+
+.create-btn {
+  position: fixed;
+  bottom: 2%;
+  right: 2%;
+  background-color: #20bf6b;
+  border-radius: 50%;
+  transition: 0.5s ease all;
+}
+
+.create-btn:hover {
+  transform: scale(0.9);
+  cursor: pointer;
+}
+
+.icon-plus {
+  fill: #fff;
+  width: 65px;
+  height: 65px;
 }

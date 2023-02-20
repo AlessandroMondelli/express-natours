@@ -42,6 +42,9 @@ exports.resizeUserPhoto = (req, res, next) => {
     .jpeg({ quality: 90 })
     .toFile(`public/img/users/${req.file.filename}`);
 
+  //Salvo in body richiesta per modifica utente
+  req.body.photo = req.file.filename;
+
   next();
 };
 

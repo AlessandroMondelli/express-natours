@@ -2,12 +2,26 @@
 import axios from 'axios';
 import { showAlert } from './alerts';
 
-export class adminCrud {
+export class AdminCrud {
   constructor(elId) {
-    this.id = elId;
+    this.id = elId !== undefined ? elId : '';
   }
 
-  async editTour(context, data) {
+  async createEl(context, data) {
+    try {
+      await axios({
+        method: 'POST',
+        url: `http://localhost:3000/api/v1/${context}/`,
+        data,
+      });
+
+      showAlert('success', 'Element created successfully.');
+    } catch (err) {
+      showAlert('error', `Error occurred while creating this element`);
+    }
+  }
+
+  async editEl(context, data) {
     try {
       await axios({
         method: 'PATCH',

@@ -1,0 +1,24 @@
+extends ../user/account 
+
+block dashboard 
+  .admin-create-user 
+    form#create-user.form.edit-tour-form.admin-form
+      .form__group
+        label.form__label(for='username') Username 
+        input#username.form__input(type='text', name='username')
+      .form__group 
+        label.form__label(for='email') Email 
+        input#email.form__input(type='email', name='email')
+      .form__group 
+        label.form__label(for='password') Password 
+        input#password.form__input(type='password', name='password', minlength='8')
+      .form__group 
+        label.form__label(for='passwordConfirm') Confirm password 
+        input#passwordConfirm.form__input(type='password', name='passwordConfirm', minlength='8')
+      .form__group 
+        label.form__label(for='role') Role 
+        select#role.form__input(name='role')
+          each opt in ['user', 'guide', 'lead-guide', 'admin']
+            option(value=`${opt}`)=opt
+      .form__group 
+        button#create-submit.btn.btn--green.span-all-rows.review-button(type='submit') Create user

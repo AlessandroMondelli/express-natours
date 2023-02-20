@@ -3,7 +3,7 @@ import { login, logout, signUp } from './login';
 import { createMap } from './mapbox';
 import { updateUser } from './updateUser';
 import { bookTour } from './stripe';
-import { adminCrud } from './adminCrud';
+import { AdminCrud } from './adminCrud';
 import { postReview, patchReview } from './review';
 import { addBookmarkToUser } from './bookmark';
 
@@ -30,6 +30,12 @@ const bookBtn = document.getElementById('book-tour');
 
 //Prendo form modifica tour
 const editTour = document.getElementById('edit-tour');
+
+//Prendo form creazione user
+const createUser = document.getElementById('create-user');
+
+//Prendo form modifica user
+const editUser = document.getElementById('edit-user');
 
 //Prendo tasto eliminazione admin
 const deleteBtn = document.getElementsByClassName('delete-el');
@@ -160,8 +166,38 @@ if (editTour) {
       formData.append('guides[]', guide);
     }
 
-    const admin = new adminCrud(tourId);
-    await admin.editTour('tours', formData);
+    const admin = new AdminCrud();
+    await admin.editEl('tours', formData, tourId);
+  });
+}
+
+if (createUser) {
+  createUser.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let dataObj = {};
+
+    const formData = new FormData(createUser);
+
+    for (const data of formData.entries()) {
+      dataObj[data[0]] = data[1];
+    }
+
+    const admin = new AdminCrud();
+
+    await admin.createEl('users', dataObj);
+  });
+}
+
+if (editUser) {
+  editUser.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userId = document.getElementById('edit-submit').dataset.userId;
+
+    //Istanzio formData per recuperare dati inviati
+    const formData = new FormData(editUser);
+
+    const admin = new AdminCrud();
+    await admin.editEl('users', formData, userId);
   });
 }
 
@@ -174,7 +210,7 @@ if (deleteBtn) {
       const elId = deleteBtn[i].dataset.elId;
       const path = deleteBtn[i].dataset.elPath;
 
-      const admin = new adminCrud(elId);
+      const admin = new AdminCrud(elId);
 
       await admin.deleteEl(path);
       deleteBtn[i].closest('.card').remove();

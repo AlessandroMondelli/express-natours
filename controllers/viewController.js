@@ -129,6 +129,17 @@ exports.adminManage = asyncErrCheck(async (req, res) => {
     //Recupero users
     data = await User.find();
     path = 'users';
+  } else if (req.originalUrl.includes('reviews')) {
+    //Recupero reviews
+    data = await Review.find().populate({
+      path: 'tour',
+      select: 'name imageCover',
+    });
+    path = 'reviews';
+  } else if (req.originalUrl.includes('bookings')) {
+    //Recupero bookings
+    data = await Booking.find();
+    path = 'bookings';
   }
 
   res.status(200).render('admin/manage', {
@@ -137,6 +148,12 @@ exports.adminManage = asyncErrCheck(async (req, res) => {
     data,
   });
 });
+
+exports.adminCreateTour = (req, res) => {
+  res.status(200).render('admin/createTour', {
+    title: 'Create tour',
+  });
+};
 
 exports.adminEditTour = asyncErrCheck(async (req, res) => {
   const tour = await Tour.findById(req.params.tourId);
@@ -148,5 +165,22 @@ exports.adminEditTour = asyncErrCheck(async (req, res) => {
     title: 'Edit tour',
     tour,
     guides,
+  });
+});
+
+exports.adminCreateUser = (req, res) => {
+  res.status(200).render('admin/createUser', {
+    title: 'Create user',
+  });
+};
+
+exports.adminEditUser = asyncErrCheck(async (req, res) => {
+  const user = await User.findById(req.params.userId).select(
+    'username email photo role'
+  );
+
+  res.status(200).render('admin/editUser', {
+    title: 'Edit user',
+    user,
   });
 });

@@ -5,7 +5,7 @@ block dashboard
     form#edit-tour.form.edit-tour-form.admin-form
       .form__group
         label.form__label(for='name') Name 
-        input#name.form__input(type='string', name='name', value=`${tour.name}`)
+        input#name.form__input(type='text', name='name', value=`${tour.name}`)
       hr
       .form__group
         h2 Start location
@@ -17,10 +17,10 @@ block dashboard
         input#latitude.form__input(type='number', name='latitude', step='0.1', value=`${tour.startLocation.coordinates[1]}`)
         .form__group
         label.form__label(for='address') Address 
-        input#address.form__input(type='string', name='address', value=`${tour.startLocation.address}`)
+        input#address.form__input(type='text', name='address', value=`${tour.startLocation.address}`)
         .form__group
         label.form__label(for='locationDescription') Description 
-        input#description.form__input(type='string', name='locationDescription', value=`${tour.startLocation.description}`)
+        input#description.form__input(type='text', name='locationDescription', value=`${tour.startLocation.description}`)
       hr
       .form__group
         h2 Guides

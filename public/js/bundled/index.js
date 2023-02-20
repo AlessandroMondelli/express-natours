@@ -580,6 +580,10 @@ const updatePasswordForm = document.querySelector(".form-user-settings");
 const bookBtn = document.getElementById("book-tour");
 //Prendo form modifica tour
 const editTour = document.getElementById("edit-tour");
+//Prendo form creazione user
+const createUser = document.getElementById("create-user");
+//Prendo form modifica user
+const editUser = document.getElementById("edit-user");
 //Prendo tasto eliminazione admin
 const deleteBtn = document.getElementsByClassName("delete-el");
 //Controllo esistenza reviews
@@ -673,15 +677,31 @@ if (editTour) editTour.addEventListener("submit", async (e)=>{
     //Preparo guide
     const guides = formData.getAll("guide");
     for (let guide of guides)formData.append("guides[]", guide);
-    const admin = new (0, _adminCrud.adminCrud)(tourId);
-    await admin.editTour("tours", formData);
+    const admin = new (0, _adminCrud.AdminCrud)();
+    await admin.editEl("tours", formData, tourId);
+});
+if (createUser) createUser.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    let dataObj = {};
+    const formData = new FormData(createUser);
+    for (const data of formData.entries())dataObj[data[0]] = data[1];
+    const admin = new (0, _adminCrud.AdminCrud)();
+    await admin.createEl("users", dataObj);
+});
+if (editUser) editUser.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const userId = document.getElementById("edit-submit").dataset.userId;
+    //Istanzio formData per recuperare dati inviati
+    const formData = new FormData(editUser);
+    const admin = new (0, _adminCrud.AdminCrud)();
+    await admin.editEl("users", formData, userId);
 });
 if (deleteBtn) //Aggiungo listener a tutti gli elementi
 for(let i = 0; i < deleteBtn.length; i++)deleteBtn[i].addEventListener("click", async (e)=>{
     e.preventDefault();
     const elId = deleteBtn[i].dataset.elId;
     const path = deleteBtn[i].dataset.elPath;
-    const admin = new (0, _adminCrud.adminCrud)(elId);
+    const admin = new (0, _adminCrud.AdminCrud)(elId);
     await admin.deleteEl(path);
     deleteBtn[i].closest(".card").remove();
 });
@@ -806,7 +826,7 @@ const logout = async ()=>{
     }
 };
 
-},{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jo6P5":[function(require,module,exports) {
+},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"6Mcnf"}],"jo6P5":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>(0, _axiosJsDefault.default));
@@ -1315,7 +1335,7 @@ const isTypedArray = ((TypedArray)=>{
 };
 /* Checking if the kindOfTest function returns true when passed an HTMLFormElement. */ const isHTMLForm = kindOfTest("HTMLFormElement");
 const toCamelCase = (str)=>{
-    return str.toLowerCase().replace(/[-_\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
+    return str.toLowerCase().replace(/[_-\s]([a-z\d])(\w*)/g, function replacer(m, p1, p2) {
         return p1.toUpperCase() + p2;
     });
 };
@@ -1373,28 +1393,6 @@ const toFiniteNumber = (value, defaultValue)=>{
     value = +value;
     return Number.isFinite(value) ? value : defaultValue;
 };
-const ALPHA = "abcdefghijklmnopqrstuvwxyz";
-const DIGIT = "0123456789";
-const ALPHABET = {
-    DIGIT,
-    ALPHA,
-    ALPHA_DIGIT: ALPHA + ALPHA.toUpperCase() + DIGIT
-};
-const generateString = (size = 16, alphabet = ALPHABET.ALPHA_DIGIT)=>{
-    let str = "";
-    const { length  } = alphabet;
-    while(size--)str += alphabet[Math.random() * length | 0];
-    return str;
-};
-/**
- * If the thing is a FormData object, return true, otherwise return false.
- *
- * @param {unknown} thing - The thing to check.
- *
- * @returns {boolean}
- */ function isSpecCompliantForm(thing) {
-    return !!(thing && isFunction(thing.append) && thing[Symbol.toStringTag] === "FormData" && thing[Symbol.iterator]);
-}
 const toJSONObject = (obj)=>{
     const stack = new Array(10);
     const visit = (source, i)=>{
@@ -1461,9 +1459,6 @@ exports.default = {
     findKey,
     global: _global,
     isContextDefined,
-    ALPHABET,
-    generateString,
-    isSpecCompliantForm,
     toJSONObject
 };
 
@@ -1773,10 +1768,9 @@ var _utilsJs = require("../utils.js");
 var _utilsJsDefault = parcelHelpers.interopDefault(_utilsJs);
 var _axiosErrorJs = require("../core/AxiosError.js");
 var _axiosErrorJsDefault = parcelHelpers.interopDefault(_axiosErrorJs);
-// temporary hotfix to avoid circular references until AxiosURLSearchParams is refactored
-var _formDataJs = require("../platform/node/classes/FormData.js");
+var _formDataJs = require("../env/classes/FormData.js");
 var _formDataJsDefault = parcelHelpers.interopDefault(_formDataJs);
-var Buffer = require("dcd4698526e800bd").Buffer;
+var Buffer = require("d1ec69dc128b009a").Buffer;
 "use strict";
 /**
  * Determines if the given thing is a array or js object.
@@ -1825,6 +1819,15 @@ const predicates = (0, _utilsJsDefault.default).toFlatObject((0, _utilsJsDefault
     return /^is[A-Z]/.test(prop);
 });
 /**
+ * If the thing is a FormData object, return true, otherwise return false.
+ *
+ * @param {unknown} thing - The thing to check.
+ *
+ * @returns {boolean}
+ */ function isSpecCompliant(thing) {
+    return thing && (0, _utilsJsDefault.default).isFunction(thing.append) && thing[Symbol.toStringTag] === "FormData" && thing[Symbol.iterator];
+}
+/**
  * Convert a data object to FormData
  *
  * @param {Object} obj
@@ -1863,7 +1866,7 @@ const predicates = (0, _utilsJsDefault.default).toFlatObject((0, _utilsJsDefault
     const dots = options.dots;
     const indexes = options.indexes;
     const _Blob = options.Blob || typeof Blob !== "undefined" && Blob;
-    const useBlob = _Blob && (0, _utilsJsDefault.default).isSpecCompliantForm(formData);
+    const useBlob = _Blob && isSpecCompliant(formData);
     if (!(0, _utilsJsDefault.default).isFunction(visitor)) throw new TypeError("visitor must be a function");
     function convertValue(value) {
         if (value === null) return "";
@@ -1891,7 +1894,7 @@ const predicates = (0, _utilsJsDefault.default).toFlatObject((0, _utilsJsDefault
                 key = metaTokens ? key : key.slice(0, -2);
                 // eslint-disable-next-line no-param-reassign
                 value = JSON.stringify(value);
-            } else if ((0, _utilsJsDefault.default).isArray(value) && isFlatArray(value) || ((0, _utilsJsDefault.default).isFileList(value) || (0, _utilsJsDefault.default).endsWith(key, "[]")) && (arr = (0, _utilsJsDefault.default).toArray(value))) {
+            } else if ((0, _utilsJsDefault.default).isArray(value) && isFlatArray(value) || (0, _utilsJsDefault.default).isFileList(value) || (0, _utilsJsDefault.default).endsWith(key, "[]") && (arr = (0, _utilsJsDefault.default).toArray(value))) {
                 // eslint-disable-next-line no-param-reassign
                 key = removeBrackets(key);
                 arr.forEach(function each(el, index) {
@@ -1931,15 +1934,15 @@ const predicates = (0, _utilsJsDefault.default).toFlatObject((0, _utilsJsDefault
 }
 exports.default = toFormData;
 
-},{"dcd4698526e800bd":"fCgem","../utils.js":"5By4s","../core/AxiosError.js":"3u8Tl","../platform/node/classes/FormData.js":"aFlee","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fCgem":[function(require,module,exports) {
+},{"d1ec69dc128b009a":"fCgem","../utils.js":"5By4s","../core/AxiosError.js":"3u8Tl","../env/classes/FormData.js":"lSnyf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"fCgem":[function(require,module,exports) {
 /*!
  * The buffer module from node.js, for the browser.
  *
  * @author   Feross Aboukhadijeh <https://feross.org>
  * @license  MIT
  */ /* eslint-disable no-proto */ "use strict";
-var base64 = require("87150159dfdb2938");
-var ieee754 = require("450b413664d8b991");
+var base64 = require("ec19cee21c1e9aef");
+var ieee754 = require("39c1f1b7d4d98ca7");
 var customInspectSymbol = typeof Symbol === "function" && typeof Symbol["for"] === "function" // eslint-disable-line dot-notation
  ? Symbol["for"]("nodejs.util.inspect.custom") // eslint-disable-line dot-notation
  : null;
@@ -3161,7 +3164,7 @@ var hexSliceLookupTable = function() {
     return table;
 }();
 
-},{"87150159dfdb2938":"eIiSV","450b413664d8b991":"cO95r"}],"eIiSV":[function(require,module,exports) {
+},{"ec19cee21c1e9aef":"eIiSV","39c1f1b7d4d98ca7":"cO95r"}],"eIiSV":[function(require,module,exports) {
 "use strict";
 exports.byteLength = byteLength;
 exports.toByteArray = toByteArray;
@@ -3419,13 +3422,17 @@ AxiosError.from = (error, code, config, request, response, customProps)=>{
 };
 exports.default = AxiosError;
 
-},{"../utils.js":"5By4s","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aFlee":[function(require,module,exports) {
-// eslint-disable-next-line strict
+},{"../utils.js":"5By4s","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lSnyf":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-exports.default = null;
+var _formData = require("form-data");
+var _formDataDefault = parcelHelpers.interopDefault(_formData);
+exports.default = (0, _formDataDefault.default);
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1VRIM":[function(require,module,exports) {
+},{"form-data":"2TZrR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2TZrR":[function(require,module,exports) {
+/* eslint-env browser */ module.exports = typeof self == "object" ? self.FormData : window.FormData;
+
+},{}],"1VRIM":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _utilsJs = require("./../utils.js");
@@ -3976,7 +3983,7 @@ class AxiosHeaders {
         header = normalizeHeader(header);
         if (header) {
             const key = (0, _utilsJsDefault.default).findKey(this, header);
-            return !!(key && this[key] !== undefined && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
+            return !!(key && (!matcher || matchHeaderValue(this, this[key], key, matcher)));
         }
         return false;
     }
@@ -3997,18 +4004,8 @@ class AxiosHeaders {
         else deleteHeader(header);
         return deleted;
     }
-    clear(matcher) {
-        const keys = Object.keys(this);
-        let i = keys.length;
-        let deleted = false;
-        while(i--){
-            const key = keys[i];
-            if (!matcher || matchHeaderValue(this, this[key], key, matcher)) {
-                delete this[key];
-                deleted = true;
-            }
-        }
-        return deleted;
+    clear() {
+        return Object.keys(this).forEach(this.delete.bind(this));
     }
     normalize(format) {
         const self = this;
@@ -4076,8 +4073,7 @@ AxiosHeaders.accessor([
     "Content-Length",
     "Accept",
     "Accept-Encoding",
-    "User-Agent",
-    "Authorization"
+    "User-Agent"
 ]);
 (0, _utilsJsDefault.default).freezeMethods(AxiosHeaders.prototype);
 (0, _utilsJsDefault.default).freezeMethods(AxiosHeaders);
@@ -4229,7 +4225,13 @@ exports.default = {
     adapters: knownAdapters
 };
 
-},{"../utils.js":"5By4s","./http.js":"aFlee","./xhr.js":"ldm57","../core/AxiosError.js":"3u8Tl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ldm57":[function(require,module,exports) {
+},{"../utils.js":"5By4s","./http.js":"aFlee","./xhr.js":"ldm57","../core/AxiosError.js":"3u8Tl","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aFlee":[function(require,module,exports) {
+// eslint-disable-next-line strict
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = null;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ldm57":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _utilsJs = require("./../utils.js");
@@ -4761,7 +4763,7 @@ exports.default = {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "VERSION", ()=>VERSION);
-const VERSION = "1.3.2";
+const VERSION = "1.2.3";
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"45wzn":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -5005,7 +5007,7 @@ const createMap = (locations)=>{
     });
 };
 
-},{"mapbox-gl":"562rs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"562rs":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","mapbox-gl":"562rs"}],"562rs":[function(require,module,exports) {
 /* Mapbox GL JS is Copyright © 2020 Mapbox and subject to the Mapbox Terms of Service ((https://www.mapbox.com/legal/tos/). */ (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -5032,7 +5034,7 @@ const createMap = (locations)=>{
         "exports"
     ], function(t1) {
         "use strict";
-        var e1 = "undefined" != typeof self ? self : {}, r = "2.12.1";
+        var e1 = "undefined" != typeof self ? self : {}, r = "2.12.0";
         let n;
         const i = {
             API_URL: "https://api.mapbox.com",
@@ -16425,7 +16427,7 @@ const createMap = (locations)=>{
                 return e1.width = e1.height = t1, e1;
             }
             draw(t1) {
-                const { width: e1 , actualBoundingBoxAscent: r , actualBoundingBoxDescent: n , actualBoundingBoxLeft: i , actualBoundingBoxRight: s  } = this.ctx.measureText(t1), a = Math.ceil(r), o = Math.max(0, Math.min(this.size - this.buffer, Math.ceil(s - i))), l = Math.min(this.size - this.buffer, a + Math.ceil(n)), u = o + 2 * this.buffer, c = l + 2 * this.buffer, h = Math.max(u * c, 0), p = new Uint8ClampedArray(h), f = {
+                const { width: e1 , actualBoundingBoxAscent: r , actualBoundingBoxDescent: n , actualBoundingBoxLeft: i , actualBoundingBoxRight: s  } = this.ctx.measureText(t1), a = Math.ceil(r), o = Math.min(this.size - this.buffer, Math.ceil(s - i)), l = Math.min(this.size - this.buffer, a + Math.ceil(n)), u = o + 2 * this.buffer, c = l + 2 * this.buffer, h = Math.max(u * c, 0), p = new Uint8ClampedArray(h), f = {
                     data: p,
                     width: u,
                     height: c,
@@ -34804,15 +34806,27 @@ const bookTour = async (tourId, date)=>{
 },{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cMuZP":[function(require,module,exports) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "adminCrud", ()=>adminCrud);
+parcelHelpers.export(exports, "AdminCrud", ()=>AdminCrud);
 var _axios = require("axios");
 var _axiosDefault = parcelHelpers.interopDefault(_axios);
 var _alerts = require("./alerts");
-class adminCrud {
+class AdminCrud {
     constructor(elId){
-        this.id = elId;
+        this.id = elId !== undefined ? elId : "";
     }
-    async editTour(context, data) {
+    async createEl(context, data) {
+        try {
+            await (0, _axiosDefault.default)({
+                method: "POST",
+                url: `http://localhost:3000/api/v1/${context}/`,
+                data
+            });
+            (0, _alerts.showAlert)("success", "Element created successfully.");
+        } catch (err) {
+            (0, _alerts.showAlert)("error", `Error occurred while creating this element`);
+        }
+    }
+    async editEl(context, data) {
         try {
             await (0, _axiosDefault.default)({
                 method: "PATCH",
@@ -34837,7 +34851,7 @@ class adminCrud {
     }
 }
 
-},{"axios":"jo6P5","./alerts":"6Mcnf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Gbth":[function(require,module,exports) {
+},{"axios":"jo6P5","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./alerts":"6Mcnf"}],"9Gbth":[function(require,module,exports) {
 /* eslint-disable */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "postReview", ()=>postReview);

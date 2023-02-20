@@ -54,10 +54,10 @@ router.get(
 );
 
 router.get(
-  '/me/manage-users',
+  '/me/manage-tours/create',
   authController.protectRoute,
   authController.restrictTo('admin'),
-  viewController.adminManage
+  viewController.adminCreateTour
 );
 
 router.get(
@@ -65,6 +65,41 @@ router.get(
   authController.protectRoute,
   authController.restrictTo('admin'),
   viewController.adminEditTour
+);
+
+router.get(
+  '/me/manage-users',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminManage
+);
+
+router.get(
+  '/me/manage-users/create',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminCreateUser
+);
+
+router.get(
+  '/me/manage-users/edit/:userId',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminEditUser
+);
+
+router.get(
+  '/me/manage-reviews',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminManage
+);
+
+router.get(
+  '/me/manage-bookings',
+  authController.protectRoute,
+  authController.restrictTo('admin'),
+  viewController.adminManage
 );
 
 module.exports = router;
