@@ -115,7 +115,7 @@ block content
             .review-form-wrap 
               form.review-form
                 label(for='review-text') Describe your adventure
-                textarea#review-text(name='review-text' rows='5' cols='50' placeholder='Write here your review') 
+                textarea#review-text.form__input(name='review-text' rows='5' cols='50' placeholder='Write here your review') 
                 input#review-rating(type='hidden' name='review-rating')
                 button#review-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-tour-id=`${tour.id}`) Send review
         else if review 

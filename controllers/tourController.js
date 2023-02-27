@@ -43,7 +43,11 @@ exports.resizeTourImages = asyncErrCheck(async (req, res, next) => {
   if (req.files.imageCover) {
     //Cover image
     //Aggiungo nome file a body
-    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpg`;
+    if (req.params.id !== undefined) {
+      req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpg`;
+    } else {
+      req.body.imageCover = `tour-${req.body.name}-${Date.now()}-cover.jpg`;
+    }
 
     //Ottimizzo immagine
     await sharp(req.files.imageCover[0].buffer)
@@ -62,8 +66,13 @@ exports.resizeTourImages = asyncErrCheck(async (req, res, next) => {
     await Promise.all(
       //itero immagini
       req.files.images.map(async (file, i) => {
+        let imageName;
         //genero nome
-        const imageName = `tour-${req.params.id}-${Date.now()}-${i}.jpg`;
+        if (req.params.id !== undefined) {
+          imageName = `tour-${req.params.id}-${Date.now()}-${i}.jpg`;
+        } else {
+          imageName = `tour-${req.body.name}-${Date.now()}-${i}.jpg`;
+        }
 
         //ottimizzo immagine
         await sharp(file.buffer)

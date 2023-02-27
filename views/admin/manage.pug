@@ -35,7 +35,7 @@ block dashboard
             .btns-wrap
               -const urlTourPatch = 'tour'
               if path === 'tours'
-                a.btn.btn--green.btn--small(href=`/${urlPatch}/${el.slug}`) Details
+                a.btn.btn--green.btn--small(href=`/${urlTourPatch}/${el.slug}`) Details
               if path === 'tours' || path === 'users'
                 a.btn.btn--green.btn--small(href=`/me/manage-${path}/edit/${el.id}`) Edit
               a.delete-el.btn.btn--green.btn--small(data-el-id=`${el.id}` data-el-path=`${path}`) Delete

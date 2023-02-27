@@ -64,6 +64,20 @@ exports.getDoc = (Model, toPopulate) =>
 //Funzione che crea document
 exports.createDoc = (Model) =>
   asyncErrCheck(async (req, res, next) => {
+    //Controllo se sia presente una data da trasformare
+    if (req.body.startDates?.length !== 0) {
+      req.body.startDates.forEach((el, index) => {
+        req.body.startDates[index] = JSON.parse(el);
+      });
+    }
+
+    //Controllo se siano presenti delle location
+    if (req.body.locations?.length !== 0) {
+      req.body.locations.forEach((el, index) => {
+        req.body.locations[index] = JSON.parse(el);
+      });
+    }
+
     const doc = await Model.create(req.body); //Creo document in database recuperando contenuto da req.body
 
     //In caso di successo ritorno messaggio con dati inseriti

@@ -1,0 +1,84 @@
+extends ../user/account 
+
+block dashboard 
+  .admin-create-tour 
+    form#create-tour.form.edit-tour-form.admin-form
+      .form__group
+          label.form__label(for='name') Name 
+          input#name.form__input(type='text', name='name')
+      .form__group
+          label.form__label(for='dates') Start dates 
+          input#dates.form__input(type='date', name='dates')
+          button#add-date.btn.btn--green.span-all-rows.in-form-btn Add a date
+      .form__group
+          label.form__label(for='duration') Duration 
+          input#duration.form__input(type='number', name='duration')
+      .form__group
+        label.form__label(for='difficulty') Difficulty
+        select#difficulty(name='difficulty')
+          each difficulty in ['easy', 'medium', 'difficult']
+            option(value=`${difficulty}`)=difficulty
+      .form__group
+          label.form__label(for='maxGroupSize') Max group size 
+          input#duration.form__input(type='number', name='maxGroupSize')
+      .form__group
+          label.form__label(for='price') Price 
+          input#duration.form__input(type='number', name='price')
+      .form__group
+          label.form__label(for='summary') Summary
+          textarea#summary.form__input(name='summary', rows='5', cols='40')
+      .form__group
+          label.form__label(for='description') Description
+          textarea#description.form__input(name='description', rows='5', cols='40')
+      .form__group
+        h2.form__heading Guides
+        .checkbox__wrap
+          each guide in guides
+            .checkbox__el
+              input.checkbox__box(type='checkbox', id=`guide-${guide.id}`, name='guides', value=`${guide.id}`)
+              label.checkbox(for=`guide-${guide.id}`)=guide.username
+      .form__group.form__photo-upload
+        input.form__upload(type='file', accept='image/*', id='imageCover', name='imageCover')
+        label(for='imageCover') Choose a image
+      .form__group.form__photo-upload
+        input.form__upload(type='file', accept='image/*', id='images', name='images', multiple)
+        label(for='images') Choose 3 tour images
+      hr
+      h2.form__heading Start location
+      .form__group
+        label.form__label(for='start-longitude') Longitude 
+        input#longitude.form__input(type='number', name='start-longitude', step='0.000001')
+      .form__group
+        label.form__label(for='start-latitude') Latitude 
+        input#latitude.form__input(type='number', name='start-latitude', step='0.000001')
+      .form__group
+        label.form__label(for='start-address') Address 
+        input#address.form__input(type='text', name='start-address')
+      .form__group
+        label.form__label(for='start-locationDescription') Description 
+        input#description.form__input(type='text', name='start-locationDescription')
+      
+      h2.form__heading Locations
+      .locations
+        .form__group
+          label.form__label(for='longitude') Longitude 
+          input#longitude.form__input(type='number', name=`longitude`, step='0.000001')
+        .form__group
+          label.form__label(for='latitude') Latitude 
+          input#latitude.form__input(type='number', name=`latitude`, step='0.000001')
+        .form__group
+          label.form__label(for='address') Address 
+          input#address.form__input(type='text', name=`address`)
+        .form__group
+          label.form__label(for='locationDescription') Description 
+          input#description.form__input(type='text', name=`locationDescription`)
+        .form__group
+          label.form__label(for='day') Days 
+          input#day.form__input(type='number', name=`day`)
+        button#add-location.btn.btn--green.span-all-rows.in-form-btn Add a location
+      hr
+      .form__group 
+        button#create-submit.btn.btn--green.span-all-rows.review-button(type='submit') Create Tour
+
+        
+      

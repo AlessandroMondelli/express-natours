@@ -149,9 +149,15 @@ exports.adminManage = asyncErrCheck(async (req, res) => {
   });
 });
 
-exports.adminCreateTour = (req, res) => {
+exports.adminCreateTour = async (req, res) => {
+  //Cerco guide
+  const guides = await User.find({
+    $or: [{ role: 'guide' }, { role: 'lead-guide' }],
+  }).select('username _id');
+
   res.status(200).render('admin/createTour', {
     title: 'Create tour',
+    guides,
   });
 };
 

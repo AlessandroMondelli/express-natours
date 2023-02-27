@@ -26,6 +26,6 @@ block dashboard
             .review-form-wrap 
               form.review-form.patch-review
                 label(for='review-text') Describe your adventure
-                textarea#review-text(name='review-text' rows='5' cols='20' placeholder='Write here your review')= review.review 
+                textarea#review-text.form__input(name='review-text' rows='5' cols='20' placeholder='Write here your review')= review.review 
                 input#review-rating(type='hidden' name='review-rating')
                 button#review-submit.btn.btn--green.span-all-rows.review-button(type='submit' data-review-id=`${review.id}`) Edit review

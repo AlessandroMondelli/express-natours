@@ -8,13 +8,13 @@ block dashboard
         input#name.form__input(type='text', name='name', value=`${tour.name}`)
       hr
       .form__group
-        h2 Start location
+        h2.form__heading Start location
         .form__group
         label.form__label(for='longitude') Longitude 
-        input#longitude.form__input(type='number', name='longitude', step='0.1', value=`${tour.startLocation.coordinates[0]}`)
+        input#longitude.form__input(type='number', name='longitude', step='0.000001', value=`${tour.startLocation.coordinates[0]}`)
         .form__group
         label.form__label(for='latitude') Latitude 
-        input#latitude.form__input(type='number', name='latitude', step='0.1', value=`${tour.startLocation.coordinates[1]}`)
+        input#latitude.form__input(type='number', name='latitude', step='0.000001', value=`${tour.startLocation.coordinates[1]}`)
         .form__group
         label.form__label(for='address') Address 
         input#address.form__input(type='text', name='address', value=`${tour.startLocation.address}`)
@@ -23,14 +23,16 @@ block dashboard
         input#description.form__input(type='text', name='locationDescription', value=`${tour.startLocation.description}`)
       hr
       .form__group
-        h2 Guides
-        - const guidesId = tour.guides.map(el => el.id);
-        each guide in guides
-          label.form__label(for=`guide-${guide.id}`)=guide.username
-          if guidesId.includes(guide.id)
-            input.guide.form__input(type='checkbox', name=`guide`, value=`${guide.id}`, checked)
-          else
-            input.guide.form__input(type='checkbox', name=`guide`, value=`${guide.id}`)
+        h2.form__heading Guides
+          .checkbox__wrap
+            - const guidesId = tour.guides.map(el => el.id);
+            each guide in guides
+                .checkbox__el
+                  if guidesId.includes(guide.id)
+                    input.checkbox__box(type='checkbox', id=`guide-${guide.id}`, name=`guide`, value=`${guide.id}`, checked)
+                  else
+                    input.checkbox__box(type='checkbox', id=`guide-${guide.id}`, name='guides', value=`${guide.id}`)
+                  label.checkbox(for=`guide-${guide.id}`)=guide.username
       .form__group
         label.form__label(for='duration') Duration 
         input#duration.form__input(type='number', name='duration', value=`${tour.duration}`)
@@ -49,10 +51,10 @@ block dashboard
         input#price.form__input(type='number', name='price', value=`${tour.price}`)
       .form__group
         label.form__label(for='summary') Summary
-        textarea#summary(name='summary', rows='5', cols='40')= tour.summary
+        textarea#summary.form__input(name='summary', rows='5', cols='40')= tour.summary
       .form__group
         label.form__label(for='description') Description
-        textarea#description(name='description', rows='5', cols='40')= tour.description
+        textarea#description.form__input(name='description', rows='5', cols='40')= tour.description
       .form__group.form__photo-upload
         img.form__user-photo(src=`/img/tours/${tour.imageCover}`, alt='tour cover')
         input.form__upload(type='file', accept='image/*', id='imageCover', name='imageCover')

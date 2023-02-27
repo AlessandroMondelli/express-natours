@@ -28,6 +28,9 @@ const updatePasswordForm = document.querySelector('.form-user-settings');
 //Prendo elemento booking
 const bookBtn = document.getElementById('book-tour');
 
+//Prendo form creazione tour
+const createTour = document.getElementById('create-tour');
+
 //Prendo form modifica tour
 const editTour = document.getElementById('edit-tour');
 
@@ -137,6 +140,103 @@ if (mapDocument) {
 }
 
 //Admin
+if (createTour) {
+  let dateAdded = 0;
+
+  document.getElementById('add-date').addEventListener('click', (e) => {
+    e.preventDefault();
+
+    //html nuova data
+    const newDate =
+      '<input class="form__input" id="duration" type="date" name="dates">';
+
+    //Inserisco nuovo tag data
+    e.target.insertAdjacentHTML('beforebegin', newDate);
+
+    dateAdded++;
+
+    if (dateAdded === 2) {
+      e.target.remove();
+    }
+  });
+
+  let locationsAdded = 0;
+
+  document.getElementById('add-location').addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const newLocation = `<div class="form__group"><label class="form__label" for="longitude">Longitude </label><input class="form__input" id="longitude" type="number" name="longitude" step="0.000001"></div><div class="form__group"><label class="form__label" for="latitude">Latitude </label><input class="form__input" id="latitude" type="number" name="latitude" step="0.000001"></div><div class="form__group"><label class="form__label" for="address">Address </label><input class="form__input" id="address" type="text" name="address"></div><div class="form__group"><label class="form__label" for="locationDescription">Description </label><input class="form__input" id="description" type="text" name="locationDescription"></div><div class="form__group"><label class="form__label" for="days">Days </label><input class="form__input" id="days" type="number" name="days"></div>`;
+
+    e.target.insertAdjacentHTML('beforebegin', newLocation);
+
+    locationsAdded++;
+
+    if (locationsAdded === 2) {
+      e.target.remove();
+    }
+  });
+
+  createTour.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    //Recupero dati da form con FormData
+    const formData = new FormData(createTour);
+
+    //Preparo start location
+    const startLocation = {
+      type: 'Point',
+      address: formData.get('start-address'),
+      description: formData.get('start-locationDescription'),
+    };
+
+    formData.append(
+      'startLocation.coordinates.0',
+      formData.get('start-longitude')
+    );
+    formData.append(
+      'startLocation.coordinates.1',
+      formData.get('start-latitude')
+    );
+
+    Object.keys(startLocation).forEach((e) => {
+      formData.append(`startLocation.${e}`, startLocation[e]);
+    });
+
+    //Aggiungo startDates
+    const startDates = formData.getAll('dates');
+
+    startDates.forEach((e) => {
+      const dateObj = {
+        date: e,
+      };
+
+      formData.append('startDates[]', JSON.stringify(dateObj));
+    });
+
+    //Aggiungo locations
+    const longitudes = formData.getAll('longitude');
+    const latitudes = formData.getAll('latitude');
+    const addresses = formData.getAll('address');
+    const locationsDescription = formData.getAll('locationDescription');
+    const days = formData.getAll('days');
+
+    longitudes.forEach((e, index) => {
+      const location = {
+        type: 'Point',
+        coordinates: [e, latitudes[index]],
+        address: addresses[index],
+        description: locationsDescription[index],
+        days: Number.parseInt(days[index]),
+      };
+
+      formData.append('locations[]', JSON.stringify(location));
+    });
+
+    const admin = new AdminCrud();
+    await admin.createEl('tours', formData);
+  });
+}
+
 if (editTour) {
   editTour.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -152,8 +252,14 @@ if (editTour) {
       description: formData.get('locationDescription'),
     };
 
-    formData.append(`startLocation.coordinates.0`, formData.get('longitude'));
-    formData.append(`startLocation.coordinates.1`, formData.get('latitude'));
+    formData.append(
+      'startLocation.coordinates.0',
+      formData.get('start-longitude')
+    );
+    formData.append(
+      'startLocation.coordinates.1',
+      formData.get('start-latitude')
+    );
 
     Object.keys(startLocation).forEach((e) => {
       formData.append(`startLocation.${e}`, startLocation[e]);
