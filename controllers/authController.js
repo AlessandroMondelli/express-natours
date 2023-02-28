@@ -212,7 +212,7 @@ exports.forgotPassword = asyncErrCheck(async (req, res, next) => {
 
   //Ritorno errore se non trovo l'utente
   if (!user) {
-    return new AppError('This email is associated not to any user.', 404);
+    return next(new AppError('This email is associated not to any user.', 404));
   }
 
   //Creo token da inviare per email
@@ -240,7 +240,10 @@ exports.forgotPassword = asyncErrCheck(async (req, res, next) => {
     user.save({ validateBeforeSave: false });
 
     return next(
-      new AppError('Something went wrong with your email, try later.', 500)
+      new AppError(
+        `Something went wrong with your email, try later. Error:`,
+        500
+      )
     );
   }
 });
@@ -298,7 +301,8 @@ exports.updatePassword = asyncErrCheck(async (req, res, next) => {
   //Aggiorno password
   currentUser.password = req.body.newPassword;
   currentUser.passwordConfirm = req.body.newPasswordConfirm;
-
+  console.log(req.body.passwordConfirm);
+  console.log(currentUser);
   await currentUser.save();
 
   //Effettuo login automatico utente

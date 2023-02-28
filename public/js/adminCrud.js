@@ -11,7 +11,7 @@ export class AdminCrud {
     try {
       await axios({
         method: 'POST',
-        url: `http://localhost:3000/api/v1/${context}/`,
+        url: `/api/v1/${context}/`,
         data,
       });
 
@@ -25,7 +25,7 @@ export class AdminCrud {
     try {
       await axios({
         method: 'PATCH',
-        url: `http://localhost:3000/api/v1/${context}/${this.id}`,
+        url: `/api/v1/${context}/${this.id}`,
         data,
       });
 
@@ -39,7 +39,7 @@ export class AdminCrud {
     try {
       await axios({
         method: 'DELETE',
-        url: `http://localhost:3000/api/v1/${context}/${this.id}`,
+        url: `/api/v1/${context}/${this.id}`,
       });
 
       showAlert('success', 'Element deleted successfully.');

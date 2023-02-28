@@ -102,10 +102,15 @@ if (updatePasswordForm) {
     //Recupero dati
     const oldPassword = document.getElementById('password-current').value;
     const newPassword = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('password-confirm').value;
+    const newPasswordConfirm =
+      document.getElementById('password-confirm').value;
 
     //Aggiorno dati
-    await updateUser('password', { oldPassword, newPassword, confirmPassword });
+    await updateUser('password', {
+      oldPassword,
+      newPassword,
+      newPasswordConfirm,
+    });
 
     //Inizializzo form
     document.getElementById('password-current').value = '';

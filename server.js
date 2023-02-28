@@ -6,7 +6,7 @@ dotenv.config({ path: './config.env' });
 
 //Handler per exceptions in codice sincrono
 process.on('uncaughtException', (err) => {
-  console.log(err.name, err.message);
+  console.error(err.name, err.message);
 
   //Termino processo
   process.exit(1);
@@ -39,7 +39,7 @@ const server = app.listen(port, () => {
 
 //Handler per promises non risolte fuori da Express
 process.on('unhandledRejection', (err) => {
-  console.log(err.name, err.message);
+  console.error(err.name, err.message);
 
   //Aspetto che sia terminato il ciclo del server
   server.close(() => {

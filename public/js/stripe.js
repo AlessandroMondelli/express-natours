@@ -16,7 +16,7 @@ export const bookTour = async (tourId, date) => {
 
     //Recupero sessione da backend
     const session = await axios(
-      `http://localhost:3000/api/v1/bookings/checkout/${tourId}/date/${year}-${month}-${day}`
+      `/api/v1/bookings/checkout/${tourId}/date/${year}-${month}-${day}`
     );
 
     if (session.data.session !== undefined) {

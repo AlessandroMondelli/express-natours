@@ -44,7 +44,7 @@ const importData = async () => {
     await Review.create(reviews);
     console.log('Dati importati correttamente');
   } catch (err) {
-    console.log(`Errore nell'import del file: ${err}`);
+    console.error(`Errore nell'import del file: ${err}`);
   }
 
   process.exit();
@@ -58,7 +58,7 @@ const deleteData = async () => {
     await Review.deleteMany();
     console.log('Dati eliminati correttamente');
   } catch (err) {
-    console.log(`Errore nella cancellazione dei dati: ${err}`);
+    console.error(`Errore nella cancellazione dei dati: ${err}`);
   }
 
   process.exit();

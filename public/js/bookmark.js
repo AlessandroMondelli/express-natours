@@ -6,7 +6,7 @@ export const addBookmarkToUser = async (tourId, booked, el) => {
     //Invio chiamata PATCH a route
     await axios({
       method: 'PATCH',
-      url: `http://localhost:3000/api/v1/users/toggle-bookmark`,
+      url: `/api/v1/users/toggle-bookmark`,
       data: { tourId },
     });
 

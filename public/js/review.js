@@ -6,7 +6,7 @@ export const postReview = async (tour, rating, review) => {
   try {
     await axios({
       method: 'POST',
-      url: `http://localhost:3000/api/v1/reviews`,
+      url: `/api/v1/reviews`,
       data: {
         review,
         rating,
@@ -26,7 +26,7 @@ export const patchReview = async (reviewId, rating, review) => {
   try {
     await axios({
       method: 'PATCH',
-      url: `http://localhost:3000/api/v1/reviews/${reviewId}`,
+      url: `/api/v1/reviews/${reviewId}`,
       data: {
         review,
         rating,
