@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
 const hpp = require('hpp');
+const compression = require('compression');
 
 //Importo modulo per gestire errori
 const AppError = require('./utils/appError');
@@ -76,6 +77,9 @@ app.use('/api', limiter);
 //Dichiaro middlewares per compatibilità JSON e Cookies in back end
 app.use(express.json());
 app.use(cookieParser());
+
+//Middleware che effettua compressione
+app.use(compression());
 
 //Dichiaro middlewares per routers
 app.use('/', viewRouter);
